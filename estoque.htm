@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Controle de Estoque | Óticas Diniz</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+<style>
+    :root {
+        --primary: #2a4365;
+        --secondary: #4299e1;
+        --light: #ebf8ff;
+        --dark: #1a365d;
+        --success: #48bb78;
+        --warning: #ed8936;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Montserrat', sans-serif; background-color: #f0f4f8; color: #2d3748; line-height: 1.6; }
+
+    /* LOGIN */
+    #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+    #loginForm { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+    #loginForm h2 { margin-bottom: 20px; color: var(--primary); }
+    #loginForm input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
+    #loginForm button { width: 100%; padding: 10px; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+    #loginForm button:hover { background: var(--primary); }
+    .error-msg { color: red; font-size: 14px; margin-top: 10px; min-height: 18px; }
+
+    /* DASHBOARD */
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
+    .logo { display: flex; align-items: center; gap: 15px; }
+    .logo h1 { font-size: 24px; font-weight: 700; }
+    .logo h1 span { color: var(--secondary); font-weight: 600; }
+    .user-menu { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .section-header h2 { font-size: 20px; color: var(--primary); }
+    .section-header h2 i { margin-right: 10px; color: var(--secondary); }
+
+    .search-box { position: relative; width: 250px; }
+    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; }
+    .search-box input { width: 100%; padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; }
+
+    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .store-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); transition: all 0.3s ease; cursor: pointer; }
+    .store-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
+    .store-card h3 { font-size: 18px; margin-bottom: 10px; color: var(--primary); }
+    .store-card p { color: #718096; font-size: 14px; }
+
+    .frame-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+    .frame-card h4 { font-size: 16px; margin-bottom: 5px; color: var(--primary); }
+    .frame-card p { font-size: 14px; color: #718096; margin-bottom: 5px; }
+    .frame-card .frame-price { font-weight: 600; color: var(--dark); }
+
+    .btn-back { background: var(--light); color: var(--primary); border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 600; }
+    .btn-back:hover { background: #bee3f8; }
+    .actions { display: flex; align-items: center; gap: 15px; }
+
+    footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px; }
+
+    #armacoes-container { display: none; }
+    .active-section { display: block !important; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Estilo para filtros */
+    .filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 15px 0; }
+    .filters select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: white; cursor: pointer; }
+    .filters select:hover { border-color: #4299e1; }
+</style>
+</head>
+<body>
+<!-- LOGIN -->
+<div id="login-container">
+  <form id="loginForm" onsubmit="processarLogin(event)">
+    <h2>🔒 Acesso Restrito</h2>
+    <input id="usuario" type="text" placeholder="Usuário" required />
+    <input id="senha" type="password" placeholder="Senha" required />
+    <button type="submit">Entrar</button>
+    <p id="errorMsg" class="error-msg"></p>
+  </form>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="container">
+  <header class="dashboard-header">
+    <div class="logo">
+      <h1>Controle de <span>Estoque</span></h1>
+    </div>
+    <div class="user-menu">
+      <span class="username">Usuário</span>
+      <i class="fas fa-user-circle"></i>
+    </div>
+  </header>
+  <main class="content">
+    <div id="lojas-container" class="active-section">
+      <div class="section-header">
+        <h2><i class="fas fa-store"></i> Nossas Lojas</h2>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input id="search-store" type="text" placeholder="Buscar loja..." />
+        </div>
+      </div>
+      <div id="lojas-list" class="grid-container"></div>
+    </div>
+
+    <div id="armacoes-container">
+      <div class="section-header">
+        <h2><i class="fas fa-glasses"></i> Armações: <span id="current-store-name"></span></h2>
+        <div class="actions">
+          <button id="back-to-stores" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input id="search-frame" type="text" placeholder="Buscar armação..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filters">
+        <select id="filter-brand"><option value="">Todas as Marcas</option></select>
+        <select id="filter-category"><option value="">Todas as Categorias</option></select>
+        <select id="filter-price">
+          <option value="">Todos os Preços</option>
+          <option value="0-199">Até R$ 199</option>
+          <option value="200-299">R$ 200 a R$ 299</option>
+          <option value="300-399">R$ 300 a R$ 399</option>
+          <option value="400-9999">Acima de R$ 400</option>
+        </select>
+        <select id="filter-quantity">
+          <option value="">Todas as Quantidades</option>
+          <option value="1-5">1 a 5</option>
+          <option value="6-10">6 a 10</option>
+          <option value="11-999">Mais de 10</option>
+        </select>
+      </div>
+      <div id="armacoes-list" class="grid-container"></div>
+    </div>
+  </main>
+  <footer class="dashboard-footer">
+    <p>Sistema de Controle de Estoque v1.0</p>
+    <p>© 2025 Diniz Óticas - Todos os direitos reservados</p>
+  </footer>
+</div>
+
+<script>
+// ========== LOGIN ==========
+function processarLogin(event) {
+  event.preventDefault();
+  const usuario = document.getElementById('usuario').value.trim();
+  const senha = document.getElementById('senha').value.trim();
+  const errorMsg = document.getElementById('errorMsg');
+
+  if (usuario === "Gabriel" && senha === "1234") {
+    // Limpa mensagem de erro e mostra dashboard
+    errorMsg.textContent = "";
+    document.getElementById('login-container').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadStores();
+  } else {
+    errorMsg.textContent = "Usuário ou senha inválidos.";
+  }
+}
+
+// ========== DADOS FAKE ==========
+const lojas = [
+  {
+    id: 1,
+    nome: "PRIMITIVA I",
+    totalArmacoes: 302,
+    armações: [
+      { modelo: "ACT-2024", marca: "ACTIVE", quantidade: 2, preco: "R$ 150,00", categoria: "Solar" },
+      { modelo: "ALP-345", marca: "ALLPROT", quantidade: 3, preco: "R$ 200,00", categoria: "Esportiva" },
+      { modelo: "AH-789", marca: "ANA HICKMANN", quantidade: 18, preco: "R$ 180,00", categoria: "Fashion" }
+    ]
+  },
+  {
+    id: 2,
+    nome: "PRIMITIVA II",
+    totalArmacoes: 190,
+    armações: [
+      { modelo: "P2-100", marca: "RAY-BAN", quantidade: 4, preco: "R$ 350,00", categoria: "Premium" },
+      { modelo: "P2-200", marca: "VOGUE", quantidade: 6, preco: "R$ 220,00", categoria: "Fashion" },
+      { modelo: "P2-300", marca: "OAKLEY", quantidade: 3, preco: "R$ 300,00", categoria: "Esportiva" }
+    ]
+  },
+  {
+    id: 3,
+    nome: "CARAPICUIBA",
+    totalArmacoes: 187,
+    armações: [
+      { modelo: "CR-556", marca: "CARRERA", quantidade: 5, preco: "R$ 220,00", categoria: "Esportiva" },
+      { modelo: "CR-789", marca: "RAY-BAN", quantidade: 12, preco: "R$ 350,00", categoria: "Premium" }
+    ]
+  },
+  {
+    id: 4,
+    nome: "JANDIRA",
+    totalArmacoes: 215,
+    armações: [
+      { modelo: "JD-202", marca: "DIESEL", quantidade: 7, preco: "R$ 280,00", categoria: "Fashion" },
+      { modelo: "JD-305", marca: "OAKLEY", quantidade: 8, preco: "R$ 320,00", categoria: "Esportiva" }
+    ]
+  },
+  {
+    id: 5,
+    nome: "BARUERI",
+    totalArmacoes: 275,
+    armações: [
+      { modelo: "BR-001", marca: "GUCCI", quantidade: 3, preco: "R$ 450,00", categoria: "Luxo" },
+      { modelo: "BR-002", marca: "VOGUE", quantidade: 15, preco: "R$ 190,00", categoria: "Fashion" }
+    ]
+  },
+  {
+    id: 6,
+    nome: "SUPER SHOPPING",
+    totalArmacoes: 420,
+    armações: [
+      { modelo: "SS-100", marca: "PRADA", quantidade: 2, preco: "R$ 500,00", categoria: "Luxo" },
+      { modelo: "SS-200", marca: "VERSACE", quantidade: 4, preco: "R$ 480,00", categoria: "Luxo" }
+    ]
+  },
+  {
+    id: 7,
+    nome: "UNIÃO",
+    totalArmacoes: 165,
+    armações: [
+      { modelo: "UN-501", marca: "CHRISTIAN DIOR", quantidade: 6, preco: "R$ 380,00", categoria: "Premium" },
+      { modelo: "UN-502", marca: "POLAROID", quantidade: 9, preco: "R$ 150,00", categoria: "Solar" }
+    ]
+  },
+  {
+    id: 8,
+    nome: "STO ANTONIO",
+    totalArmacoes: 198,
+    armações: [
+      { modelo: "SA-301", marca: "DOLCE & GABBANA", quantidade: 4, preco: "R$ 420,00", categoria: "Luxo" },
+      { modelo: "SA-302", marca: "FILA", quantidade: 12, preco: "R$ 160,00", categoria: "Esportiva" }
+    ]
+  },
+  {
+    id: 9,
+    nome: "ANTONIO AGU",
+    totalArmacoes: 230,
+    armações: [
+      { modelo: "AA-401", marca: "TOMMY HILFIGER", quantidade: 8, preco: "R$ 290,00", categoria: "Fashion" },
+      { modelo: "AA-402", marca: "MICHAEL KORS", quantidade: 5, preco: "R$ 310,00", categoria: "Premium" }
+    ]
+  }
+];
+
+// ========== REFS DOM ==========
+const lojasList = document.getElementById('lojas-list');
+const armaoesList = document.getElementById('armacoes-list'); // nome de variável sem cedilha, mas ID correto
+const currentStoreName = document.getElementById('current-store-name');
+const backButton = document.getElementById('back-to-stores');
+const searchStore = document.getElementById('search-store');
+const searchFrame = document.getElementById('search-frame');
+const filterBrand = document.getElementById('filter-brand');
+const filterCategory = document.getElementById('filter-category');
+const filterPrice = document.getElementById('filter-price');
+const filterQuantity = document.getElementById('filter-quantity');
+
+let lojaAtual = null;
+
+// ========== CARREGAR LOJAS ==========
+function loadStores() {
+  lojasList.innerHTML = '';
+  lojas.forEach(loja => {
+    const storeCard = document.createElement('div');
+    storeCard.className = 'store-card';
+    storeCard.innerHTML = `<h3>${loja.nome}</h3><p>Total de armações: ${loja.totalArmacoes}</p>`;
+    storeCard.addEventListener('click', () => showFrames(loja));
+    lojasList.appendChild(storeCard);
+  });
+}
+
+// ========== BUSCAR IMAGEM (GOOGLE CSE) ==========
+async function buscarImagemGoogle(query) {
+  const apiKey = "AIzaSyBBa_2hrCfMBck76oYE7TRh8QGjI_pecIA"; // substitua aqui pela sua chave
+  const cx = "32ffde2adffc847bc"; // substitua aqui pelo seu CX
+
+  const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&cx=${cx}&searchType=image&num=1&key=${apiKey}`;
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data.items && data.items.length > 0 ? data.items[0].link : "https://via.placeholder.com/300x150?text=Sem+Imagem";
+  } catch (e) {
+    console.error("Erro ao buscar imagem:", e);
+    return "https://via.placeholder.com/300x150?text=Sem+Imagem";
+  }
+}
+
+// ========== RENDERIZAR ARMAÇÕES ==========
+async function renderFrames(lista) {
+  armaoesList.innerHTML = '';
+  for (const armacao of lista) {
+    const frameCard = document.createElement('div');
+    frameCard.className = 'frame-card';
+
+    const query = `${armacao.marca} ${armacao.modelo}`;
+    const imgUrl = await buscarImagemGoogle(query);
+
+    frameCard.innerHTML = `
+      <img src="${imgUrl}" alt="${armacao.modelo}" style="width:100%; border-radius:8px; margin-bottom:10px;">
+      <h4>${armacao.modelo}</h4>
+      <p>Marca: ${armacao.marca}</p>
+      <p>Quantidade: ${armacao.quantidade}</p>
+      <p class="frame-price">Preço: ${armacao.preco}</p>
+      <p>Categoria: ${armacao.categoria}</p>
+    `;
+
+    armaoesList.appendChild(frameCard);
+  }
+}
+
+// ========== ABRIR LOJA ==========
+function showFrames(loja) {
+  lojaAtual = loja;
+  currentStoreName.textContent = loja.nome;
+
+  // Preencher selects
+  const marcas = [...new Set(loja.armações.map(a => a.marca))];
+  const categorias = [...new Set(loja.armações.map(a => a.categoria))];
+  filterBrand.innerHTML = '<option value="">Todas as Marcas</option>' + marcas.map(m => `<option value="${m}">${m}</option>`).join('');
+  filterCategory.innerHTML = '<option value="">Todas as Categorias</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  renderFrames(loja.armações);
+  document.getElementById('lojas-container').classList.remove('active-section');
+  document.getElementById('armacoes-container').classList.add('active-section');
+}
+
+// ========== FILTROS ==========
+function aplicarFiltros() {
+  if (!lojaAtual) return;
+  const framesFiltrados = lojaAtual.armações.filter(armacao => {
+    const preco = parseFloat(armacao.preco.replace("R$","").replace(".","").replace(",",".").trim());
+    const qtd = armacao.quantidade;
+    const passaMarca = !filterBrand.value || armacao.marca === filterBrand.value;
+    const passaCategoria = !filterCategory.value || armacao.categoria === filterCategory.value;
+    let passaPreco = true;
+    if (filterPrice.value) {
+      const [min, max] = filterPrice.value.split('-').map(Number);
+      passaPreco = preco >= min && preco <= max;
+    }
+    let passaQtd = true;
+    if (filterQuantity.value) {
+      const [min, max] = filterQuantity.value.split('-').map(Number);
+      passaQtd = qtd >= min && qtd <= max;
+    }
+    return passaMarca && passaCategoria && passaPreco && passaQtd;
+  });
+  renderFrames(framesFiltrados);
+}
+
+// ========== EVENTOS ==========
+[filterBrand, filterCategory, filterPrice, filterQuantity].forEach(filtro => {
+  filtro.addEventListener('change', aplicarFiltros);
+});
+
+backButton.addEventListener('click', () => {
+  document.getElementById('armacoes-container').classList.remove('active-section');
+  document.getElementById('lojas-container').classList.add('active-section');
+});
+
+searchStore.addEventListener('input', (e) => {
+  const termo = e.target.value.toLowerCase();
+  document.querySelectorAll('.store-card').forEach(card => {
+    card.style.display = card.querySelector('h3').textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+  });
+});
+
+searchFrame.addEventListener('input', (e) => {
+  const termo = e.target.value.toLowerCase();
+  document.querySelectorAll('.frame-card').forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
+  });
+});
+</script>
+</body>
+</html>

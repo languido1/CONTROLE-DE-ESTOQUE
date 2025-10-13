@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Acesso Restrito</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="login.js" defer></script>
+</head>
+<body>
+  <form id="loginForm" onsubmit="processarLogin(event)">
+    <h2>🔒 CONTROLE DE ESTOQUE DE ARMAÇÕES ÓTICAS DINIZ/h2>
+    <input type="text" id="usuario" placeholder="Usuário" required>
+    <input type="password" id="senha" placeholder="Senha" required>
+    <button type="submit">Entrar</button>
+    <p id="errorMsg" class="error-msg"></p>
+  </form>
+</body>
+</html>
