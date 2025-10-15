@@ -68,24 +68,15 @@
     .filters select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: white; cursor: pointer; }
     .filters select:hover { border-color: #4299e1; }
 
-    /* Modal */
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-header h2 { color: var(--primary); }
-    .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #718096; }
-    .modal-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-    .modal-table th, .modal-table td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    .modal-table th { background: var(--light); font-weight: 600; }
-    .modal-form { margin-top: 20px; }
-    .modal-form input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
-    .modal-form button { background: var(--secondary); color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+    /* Loading */
+    .loading { text-align: center; padding: 20px; color: var(--secondary); }
+    .loading i { font-size: 24px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <!-- LOGIN -->
   <div id="login-container">
-    <form id="loginForm" onsubmit="processarLogin(event)">
+    <form id="loginForm">
       <h2>🔒 Acesso Restrito</h2>
       <input id="usuario" type="text" placeholder="Usuário" required />
       <input id="senha" type="password" placeholder="Senha" required />
@@ -111,10 +102,15 @@
           <h2><i class="fas fa-store"></i> Nossas Lojas</h2>
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input id="search-store" type="text" placeholder="Buscar loja..." onkeyup="filtrarLojas()" />
+            <input id="search-store" type="text" placeholder="Buscar loja..." />
           </div>
         </div>
-        <div id="lojas-list" class="grid-container"></div>
+        <div id="lojas-list" class="grid-container">
+          <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando lojas...</p>
+          </div>
+        </div>
       </div>
 
       <div id="armacoes-container">
@@ -124,27 +120,27 @@
             <button id="back-to-stores" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
             <div class="search-box">
               <i class="fas fa-search"></i>
-              <input id="search-frame" type="text" placeholder="Buscar armação..." onkeyup="filtrarArmacoes()" />
+              <input id="search-frame" type="text" placeholder="Buscar armação..." />
             </div>
           </div>
         </div>
 
         <!-- FILTROS -->
         <div class="filters">
-          <select id="filter-brand" onchange="filtrarArmacoes()">
+          <select id="filter-brand">
             <option value="">Todas as Marcas</option>
           </select>
-          <select id="filter-category" onchange="filtrarArmacoes()">
+          <select id="filter-category">
             <option value="">Todas as Categorias</option>
           </select>
-          <select id="filter-price" onchange="filtrarArmacoes()">
+          <select id="filter-price">
             <option value="">Todos os Preços</option>
             <option value="0-199">Até R$ 199</option>
             <option value="200-299">R$ 200 a R$ 299</option>
             <option value="300-399">R$ 300 a R$ 399</option>
             <option value="400-9999">Acima de R$ 400</option>
           </select>
-          <select id="filter-quantity" onchange="filtrarArmacoes()">
+          <select id="filter-quantity">
             <option value="">Todas as Quantidades</option>
             <option value="1-5">1 a 5</option>
             <option value="6-10">6 a 10</option>
@@ -153,19 +149,16 @@
         </div>
         <div id="armacoes-list" class="grid-container"></div>
 
-        <!-- FORMULÁRIO PARA CADASTRAR / ATUALIZAR -->
+        <!-- FORMULÁRIO PARA CADASTRAR -->
         <div id="cadastro-armacao" style="margin:20px 0; background:#fff; padding:15px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-          <h3 style="margin-bottom:10px; color:#2a4365;">➕ Cadastrar / Atualizar Armação</h3>
-          <form id="formArmacao" onsubmit="salvarArmacao(event)">
-            <input type="text" id="empresa" placeholder="Empresa (Ex: DNIZ PRIMITIVA I)" required style="margin:5px; padding:8px;">
+          <h3 style="margin-bottom:10px; color:#2a4365;">➕ Cadastrar Nova Armação</h3>
+          <form id="formArmacao">
             <input type="text" id="marca" placeholder="Marca" required style="margin:5px; padding:8px;">
             <input type="text" id="modelo" placeholder="Modelo" required style="margin:5px; padding:8px;">
             <input type="number" id="quantidade" placeholder="Quantidade" required style="margin:5px; padding:8px;">
-            <select id="acao" style="margin:5px; padding:8px;">
-              <option value="add">Cadastrar Novo</option>
-              <option value="update">Entrada / Saída</option>
-            </select>
-            <button type="submit" style="margin:5px; padding:8px 15px; background:#4299e1; color:#fff; border:none; border-radius:6px; cursor:pointer;">Salvar</button>
+            <input type="text" id="preco" placeholder="Preço (R$)" style="margin:5px; padding:8px;">
+            <input type="text" id="categoria" placeholder="Categoria" style="margin:5px; padding:8px;">
+            <button type="submit" style="margin:5px; padding:8px 15px; background:#4299e1; color:#fff; border:none; border-radius:6px; cursor:pointer;">Cadastrar</button>
           </form>
           <p id="msgRetorno" style="margin-top:10px; font-weight:600;"></p>
         </div>
@@ -178,22 +171,12 @@
   </div>
 
   <script>
+    // URL da API - Vamos testar sem parâmetros primeiro
     const API_URL = "https://script.google.com/macros/s/AKfycbxFGsap0ifhvlK4WuyyGpMAVatErHO-taoFjaMEqqygZ3vSLgE0Qx_4OhWluzVpmGn8sA/exec";
+    
     let dadosLojas = {};
     let usuarioLogado = null;
     let lojaAtual = null;
-
-    // Função para limpar dados inválidos da tela
-    function limparDadosInvalidos() {
-      // Remove qualquer texto JSON que apareça no body
-      const body = document.body;
-      const bodyText = body.textContent || body.innerText;
-      
-      if (bodyText.includes('{"id":1,"nome":"Administrador"')) {
-        // Limpa o conteúdo inválido
-        body.innerHTML = body.innerHTML.split('{"id":1,"nome":"Administrador"')[0];
-      }
-    }
 
     // ========== FUNÇÕES DE AUTENTICAÇÃO ==========
     function processarLogin(event) {
@@ -210,9 +193,7 @@
         document.querySelector('.username').textContent = usuario;
         
         // Carregar dados ao fazer login
-        carregarDados().then(() => {
-          carregarLojas();
-        });
+        carregarDados();
         
         errorMsg.textContent = '';
       } else {
@@ -226,50 +207,78 @@
     }
 
     async function carregarDados() {
+      const lojasList = document.getElementById('lojas-list');
+      
       try {
-        // URL com parâmetro para evitar cache
-        const response = await fetch(API_URL + '?timestamp=' + new Date().getTime());
-        const textoResposta = await response.text();
+        console.log("Tentando carregar dados da API...");
         
-        console.log("Resposta bruta:", textoResposta);
+        // Faz a requisição SEM parâmetros para evitar problemas
+        const response = await fetch(API_URL);
         
-        // Verifica se a resposta é JSON válido
-        let dadosPlanilha;
-        try {
-          dadosPlanilha = JSON.parse(textoResposta);
-        } catch (parseError) {
-          console.error("Erro ao parsear JSON:", parseError);
-          // Se não for JSON válido, usa dados locais
-          throw new Error("Resposta inválida da planilha");
+        if (!response.ok) {
+          throw new Error(`Erro HTTP: ${response.status}`);
         }
         
+        const textoResposta = await response.text();
+        console.log("Resposta bruta da API:", textoResposta);
+        
+        // Tenta parsear como JSON
+        let dadosAPI;
+        try {
+          dadosAPI = JSON.parse(textoResposta);
+        } catch (parseError) {
+          console.error("Não é JSON válido, usando dados locais");
+          throw new Error("Resposta não é JSON válido");
+        }
+        
+        // VERIFICAÇÃO CRÍTICA: Se retornar dados de usuário, ignora
+        if (dadosAPI && dadosAPI.usuario === "admin") {
+          console.warn("API retornou dados de usuário, ignorando...");
+          throw new Error("API retornando dados de configuração");
+        }
+        
+        // Processa os dados da planilha
         dadosLojas = {};
         
-        // Processa os dados - adapte conforme a estrutura real
-        if (Array.isArray(dadosPlanilha)) {
-          dadosPlanilha.forEach(item => {
-            // Tenta diferentes nomes de campos
-            const loja = item.Empresa || item.empresa || item.loja || "Loja Desconhecida";
+        if (Array.isArray(dadosAPI)) {
+          dadosAPI.forEach((item, index) => {
+            // Pula o cabeçalho (primeira linha)
+            if (index === 0) return;
+            
+            // Extrai dados baseado na estrutura esperada da planilha
+            const loja = item[0] || "Loja Desconhecida"; // Coluna A - Empresa
+            const marca = item[1] || "Sem marca";        // Coluna B - Marca
+            const quantidade = item[2] || 0;             // Coluna C - Saldo
+            const modelo = item[3] || "Sem modelo";      // Coluna D - Modelo
+            const preco = item[4] || "R$ 0,00";          // Coluna E - Preço
+            const categoria = item[5] || "Geral";        // Coluna F - Categoria
+            
             if (!dadosLojas[loja]) dadosLojas[loja] = [];
             
-            dadosLojas[loja].push({
-              modelo: item.Modelo || item.modelo || "Sem modelo",
-              marca: item.Marca || item.marca || "Sem marca",
-              quantidade: item.Saldo || item.quantidade || item.Quantidade || 0,
-              preco: item.Preço || item.preco || item.Preco || "R$ 0,00",
-              categoria: item.Categoria || item.categoria || "Geral"
-            });
+            if (modelo && modelo !== "Sem modelo") {
+              dadosLojas[loja].push({
+                modelo: modelo,
+                marca: marca,
+                quantidade: quantidade,
+                preco: preco,
+                categoria: categoria
+              });
+            }
           });
+          
+          console.log('Dados processados da planilha:', dadosLojas);
         }
         
         salvarLocal();
-        console.log('Dados carregados:', dadosLojas);
+        carregarLojas();
         
       } catch (err) {
         console.warn("Erro ao carregar da planilha, usando localStorage:", err);
+        
+        // Carrega do localStorage ou usa dados de exemplo
         dadosLojas = JSON.parse(localStorage.getItem("dadosLojas")) || {};
         
-        // Dados de exemplo caso não tenha nada
+        // Se não há dados, usa exemplo
         if (Object.keys(dadosLojas).length === 0) {
           dadosLojas = {
             "DNIZ PRIMITIVA I": [
@@ -279,43 +288,51 @@
             "DNIZ CENTRO": [
               { modelo: "Charmant Elegance", marca: "Charmant", quantidade: 12, preco: "R$ 190,00", categoria: "Acetato" },
               { modelo: "Silhouette Titan", marca: "Silhouette", quantidade: 5, preco: "R$ 420,00", categoria: "Luxo" }
+            ],
+            "DNIZ SHOPPING": [
+              { modelo: "Police Phantom", marca: "Police", quantidade: 10, preco: "R$ 320,00", categoria: "Esportiva" },
+              { modelo: "Diesel Grinder", marca: "Diesel", quantidade: 7, preco: "R$ 290,00", categoria: "Casual" }
             ]
           };
           salvarLocal();
         }
+        
+        carregarLojas();
       }
     }
 
     async function salvarNaPlanilha(armacao) {
-      // Salvar no localStorage primeiro
-      const lojaId = armacao.loja;
-      if (!dadosLojas[lojaId]) dadosLojas[lojaId] = [];
-      
-      if (armacao.action === "add") {
-        dadosLojas[lojaId].push({
-          modelo: armacao.modelo,
-          marca: armacao.marca,
-          quantidade: armacao.quantidade,
-          preco: "R$ 0,00", // Valor padrão
-          categoria: "Geral" // Categoria padrão
-        });
-      }
-      
-      salvarLocal();
-
-      // Tentar salvar na planilha
       try {
+        // Prepara dados para a API
+        const dadosEnvio = {
+          action: "add",
+          loja: lojaAtual,
+          marca: armacao.marca,
+          modelo: armacao.modelo,
+          quantidade: armacao.quantidade,
+          preco: armacao.preco,
+          categoria: armacao.categoria
+        };
+        
+        console.log("Enviando para API:", dadosEnvio);
+        
         const response = await fetch(API_URL, {
           method: "POST",
-          body: JSON.stringify(armacao),
-          headers: { "Content-Type": "application/json" }
+          body: JSON.stringify(dadosEnvio),
+          headers: { 
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          }
         });
-        const resultado = await response.json();
-        console.log("Resposta da planilha:", resultado);
-        return resultado;
+        
+        const resultado = await response.text();
+        console.log("Resposta da API:", resultado);
+        
+        return { status: "success", message: "Salvo com sucesso!" };
+        
       } catch (err) {
-        console.error("Erro ao salvar na planilha, mas salvo no localStorage:", err);
-        return { status: "error", message: "Erro de conexão" };
+        console.error("Erro ao salvar na planilha:", err);
+        return { status: "error", message: "Erro de conexão com a planilha" };
       }
     }
 
@@ -333,7 +350,7 @@
         <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
           <h3>${loja.toUpperCase()}</h3>
           <p>${dadosLojas[loja].length} armações cadastradas</p>
-          <p><small>Clique para ver detalhes</small></p>
+          <p><small>Última atualização: ${new Date().toLocaleDateString()}</small></p>
         </div>
       `).join('');
     }
@@ -346,6 +363,12 @@
       );
       
       const lojasList = document.getElementById('lojas-list');
+      
+      if (lojasFiltradas.length === 0) {
+        lojasList.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">Nenhuma loja encontrada</p>';
+        return;
+      }
+      
       lojasList.innerHTML = lojasFiltradas.map(loja => `
         <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
           <h3>${loja.toUpperCase()}</h3>
@@ -360,9 +383,6 @@
       document.getElementById('lojas-container').classList.remove('active-section');
       document.getElementById('armacoes-container').classList.add('active-section');
       document.getElementById('current-store-name').textContent = lojaId.toUpperCase();
-      
-      // Preencher o campo empresa no formulário
-      document.getElementById('empresa').value = lojaId;
       
       carregarArmacoes(lojaId);
       carregarFiltros(lojaId);
@@ -380,11 +400,15 @@
       filterCategory.innerHTML = '<option value="">Todas as Categorias</option>';
       
       marcas.forEach(marca => {
-        filterBrand.innerHTML += `<option value="${marca}">${marca}</option>`;
+        if (marca && marca !== "Sem marca") {
+          filterBrand.innerHTML += `<option value="${marca}">${marca}</option>`;
+        }
       });
       
       categorias.forEach(categoria => {
-        filterCategory.innerHTML += `<option value="${categoria}">${categoria}</option>`;
+        if (categoria && categoria !== "Geral") {
+          filterCategory.innerHTML += `<option value="${categoria}">${categoria}</option>`;
+        }
       });
     }
 
@@ -432,7 +456,7 @@
         // Filtro por preço
         let precoMatch = true;
         if (precoFiltro) {
-          const precoNum = parseFloat(armacao.preco.replace('R$', '').replace(',', '.').trim());
+          const precoNum = parseFloat(armacao.preco.replace('R$', '').replace(',', '.').trim()) || 0;
           const [min, max] = precoFiltro.split('-').map(Number);
           precoMatch = precoNum >= min && precoNum <= max;
         }
@@ -468,37 +492,49 @@
     async function salvarArmacao(event) {
       event.preventDefault();
       
-      const empresa = document.getElementById('empresa').value;
       const marca = document.getElementById('marca').value;
       const modelo = document.getElementById('modelo').value;
-      const quantidade = document.getElementById('quantidade').value;
-      const acao = document.getElementById('acao').value;
+      const quantidade = parseInt(document.getElementById('quantidade').value);
+      const preco = document.getElementById('preco').value;
+      const categoria = document.getElementById('categoria').value;
       const msgRetorno = document.getElementById('msgRetorno');
       
+      if (!lojaAtual) {
+        msgRetorno.textContent = "Erro: Nenhuma loja selecionada";
+        msgRetorno.style.color = "red";
+        return;
+      }
+      
       const armacao = {
-        loja: empresa,
         marca: marca,
         modelo: modelo,
-        quantidade: parseInt(quantidade),
-        action: acao
+        quantidade: quantidade,
+        preco: preco,
+        categoria: categoria
       };
       
       try {
+        // Salva localmente primeiro
+        if (!dadosLojas[lojaAtual]) dadosLojas[lojaAtual] = [];
+        dadosLojas[lojaAtual].push(armacao);
+        salvarLocal();
+        
+        // Tenta salvar na planilha
         const resultado = await salvarNaPlanilha(armacao);
-        msgRetorno.textContent = resultado.message || "Salvo com sucesso!";
+        
+        msgRetorno.textContent = resultado.message;
         msgRetorno.style.color = resultado.status === "error" ? "red" : "green";
         
-        // Recarregar os dados e a visualização
-        if (lojaAtual) {
-          await carregarDados();
-          carregarArmacoes(lojaAtual);
-          carregarFiltros(lojaAtual);
-        }
+        // Atualiza a visualização
+        carregarArmacoes(lojaAtual);
+        carregarFiltros(lojaAtual);
         
-        // Limpar o formulário
+        // Limpa o formulário
         document.getElementById('marca').value = '';
         document.getElementById('modelo').value = '';
         document.getElementById('quantidade').value = '';
+        document.getElementById('preco').value = '';
+        document.getElementById('categoria').value = '';
         
       } catch (error) {
         msgRetorno.textContent = "Erro ao salvar: " + error.message;
@@ -508,7 +544,8 @@
 
     // ========== EVENT LISTENERS ==========
     document.addEventListener('DOMContentLoaded', function() {
-      limparDadosInvalidos();
+      // Login form
+      document.getElementById('loginForm').addEventListener('submit', processarLogin);
       
       // Botão voltar para lojas
       document.getElementById('back-to-stores').addEventListener('click', function() {
@@ -517,18 +554,20 @@
         lojaAtual = null;
       });
       
-      // Verificar se já está logado
-      const usuarioSalvo = localStorage.getItem('usuarioLogado');
-      if (usuarioSalvo) {
-        usuarioLogado = usuarioSalvo;
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        document.querySelector('.username').textContent = usuarioSalvo;
-        
-        carregarDados().then(() => {
-          carregarLojas();
-        });
-      }
+      // Search stores
+      document.getElementById('search-store').addEventListener('keyup', filtrarLojas);
+      
+      // Search frames
+      document.getElementById('search-frame').addEventListener('keyup', filtrarArmacoes);
+      
+      // Form cadastro
+      document.getElementById('formArmacao').addEventListener('submit', salvarArmacao);
+      
+      // Filtros
+      document.getElementById('filter-brand').addEventListener('change', filtrarArmacoes);
+      document.getElementById('filter-category').addEventListener('change', filtrarArmacoes);
+      document.getElementById('filter-price').addEventListener('change', filtrarArmacoes);
+      document.getElementById('filter-quantity').addEventListener('change', filtrarArmacoes);
     });
   </script>
 </body>
