@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxFGsap0ifhvlK4WuyyGpMAVatErHO-taoFjaMEqqygZ3vSLgE0Qx_4OhWluzVpmGn8sA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxKEUl0kyed4s0QZYS2boeof4iD8SlAAcRTcMcU0PX6cKJsoOs8YBxXOtj-l6y-5Tlu-g/exec";
 let dadosLojas = {};
 
 // Salvar no localStorage
@@ -59,3 +59,4 @@ async function salvarNaPlanilha(lojaId, armacao) {
 }
 
 // Restante do seu código JavaScript permanece similar...
+
