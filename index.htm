@@ -21,7 +21,7 @@
 
     /* LOGIN */
     #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-    #loginForm { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+    #loginForm { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1 ); text-align: center; width: 320px; }
     #loginForm h2 { margin-bottom: 20px; color: var(--primary); }
     #loginForm input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
     #loginForm button { width: 100%; padding: 10px; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
@@ -107,8 +107,8 @@
   <div id="login-container">
     <form id="loginForm">
       <h2>🔒 Acesso Restrito</h2>
-      <input id="usuario" type="text" placeholder="Usuário" required />
-      <input id="senha" type="password" placeholder="Senha" required />
+      <input id="usuario" type="text" placeholder="Usuário" required value="admin" />
+      <input id="senha" type="password" placeholder="Senha" required value="1234"/>
       <button type="submit">Entrar</button>
       <p id="errorMsg" class="error-msg"></p>
     </form>
@@ -137,7 +137,7 @@
           <h2><i class="fas fa-store"></i> Nossas Lojas</h2>
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input id="search-store" type="text" placeholder="Buscar loja..." />
+            <input id="search-store" type="text" placeholder="Buscar loja..."/>
           </div>
         </div>
         <div id="lojas-list" class="grid-container">
@@ -155,7 +155,7 @@
             <button id="back-to-stores" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
             <div class="search-box">
               <i class="fas fa-search"></i>
-              <input id="search-frame" type="text" placeholder="Buscar armação..." />
+              <input id="search-frame" type="text" placeholder="Buscar armação..."/>
             </div>
           </div>
         </div>
@@ -200,102 +200,106 @@
             <h3 style="margin-bottom:15px; color:#2a4365;">➕ Cadastrar Nova Armação</h3>
             <form id="formCadastro">
               <div class="form-group">
+                <label for="cadastro-loja">Loja *</label>
+                <input id="cadastro-loja" type="text" placeholder="Nome da Loja" required />
+              </div>
+              <div class="form-group">
                 <label for="cadastro-marca">Marca *</label>
-                <input type="text" id="cadastro-marca" placeholder="Ex: Ray-Ban" required>
+                <input id="cadastro-marca" type="text" placeholder="Marca da Armação" required />
               </div>
               <div class="form-group">
                 <label for="cadastro-modelo">Modelo *</label>
-                <input type="text" id="cadastro-modelo" placeholder="Ex: Aviador" required>
+                <input id="cadastro-modelo" type="text" placeholder="Modelo da Armação" required />
               </div>
               <div class="form-group">
-                <label for="cadastro-quantidade">Quantidade Inicial *</label>
-                <input type="number" id="cadastro-quantidade" placeholder="Ex: 10" required min="0">
+                <label for="cadastro-quantidade">Quantidade *</label>
+                <input id="cadastro-quantidade" type="number" placeholder="Quantidade" required />
               </div>
               <div class="form-group">
-                <label for="cadastro-preco">Preço (R$)</label>
-                <input type="text" id="cadastro-preco" placeholder="Ex: 350,00">
+                <label for="cadastro-preco">Preço</label>
+                <input id="cadastro-preco" type="text" placeholder="Ex: 190.00" />
               </div>
               <div class="form-group">
                 <label for="cadastro-categoria">Categoria</label>
-                <input type="text" id="cadastro-categoria" placeholder="Ex: Luxo">
+                <input id="cadastro-categoria" type="text" placeholder="Ex: Acetato, Metal..." />
               </div>
-              <button type="submit" class="btn btn-primary">Cadastrar Armação</button>
+              <button type="submit" class="btn btn-primary">Cadastrar</button>
+              <p id="msgCadastro" style="margin-top:15px; font-weight:600;"></p>
             </form>
-            <p id="msgCadastro" style="margin-top:10px; font-weight:600;"></p>
           </div>
         </div>
 
         <!-- TAB 3: ENTRADA/SAÍDA -->
         <div class="tab-content" id="tab-entrada-saida">
           <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-            <h3 style="margin-bottom:15px; color:#2a4365;">📊 Entrada/Saída de Estoque</h3>
+            <h3 style="margin-bottom:15px; color:#2a4365;">🔄 Registrar Entrada/Saída</h3>
             <form id="formMovimentacao">
               <div class="form-group">
+                <label for="movimentacao-loja">Loja *</label>
+                <input id="movimentacao-loja" type="text" placeholder="Nome da Loja" required />
+              </div>
+              <div class="form-group">
                 <label for="movimentacao-marca">Marca *</label>
-                <input type="text" id="movimentacao-marca" placeholder="Ex: Ray-Ban" required>
+                <input id="movimentacao-marca" type="text" placeholder="Marca da Armação" required />
               </div>
               <div class="form-group">
                 <label for="movimentacao-modelo">Modelo *</label>
-                <input type="text" id="movimentacao-modelo" placeholder="Ex: Aviador" required>
+                <input id="movimentacao-modelo" type="text" placeholder="Modelo da Armação" required />
               </div>
               <div class="form-group">
                 <label for="movimentacao-tipo">Tipo de Movimentação *</label>
-                <select id="movimentacao-tipo" required>
-                  <option value="entrada">Entrada no Estoque</option>
-                  <option value="saida">Saída do Estoque</option>
+                <select id="movimentacao-tipo">
+                  <option value="entrada">Entrada</option>
+                  <option value="saida">Saída</option>
                 </select>
               </div>
               <div class="form-group">
                 <label for="movimentacao-quantidade">Quantidade *</label>
-                <input type="number" id="movimentacao-quantidade" placeholder="Ex: 5" required min="1">
+                <input id="movimentacao-quantidade" type="number" placeholder="Quantidade" required />
               </div>
-              <button type="submit" class="btn btn-primary">Registrar Movimentação</button>
+              <button type="submit" class="btn btn-primary">Registrar</button>
+              <p id="msgMovimentacao" style="margin-top:15px; font-weight:600;"></p>
             </form>
-            <p id="msgMovimentacao" style="margin-top:10px; font-weight:600;"></p>
           </div>
         </div>
       </div>
     </main>
-    <footer class="dashboard-footer">
-      <p>Sistema de Controle de Estoque v1.0</p>
-      <p>© 2025 Diniz Óticas - Todos os direitos reservados</p>
+    <footer>
+      Sistema de Controle de Estoque v1.0
     </footer>
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxFGsap0ifhvlK4WuyyGpMAVatErHO-taoFjaMEqqygZ3vSLgE0Qx_4OhWluzVpmGn8sA/exec";
-    
     let dadosLojas = {};
-    let usuarioLogado = null;
     let lojaAtual = null;
+    let usuarioLogado = null;
 
-    // ========== FUNÇÕES DE AUTENTICAÇÃO ==========
+    // ========== FUNÇÕES DE LOGIN ==========
     function processarLogin(event) {
       event.preventDefault();
-      const usuario = document.getElementById('usuario').value;
-      const senha = document.getElementById('senha').value;
-      const errorMsg = document.getElementById('errorMsg');
+      const usuario = document.getElementById("usuario").value;
+      const senha = document.getElementById("senha").value;
+      const errorMsg = document.getElementById("errorMsg");
 
-      if (usuario === 'admin' && senha === '1234') {
+      if (usuario === "admin" && senha === "1234") {
         usuarioLogado = usuario;
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        document.querySelector('.username').textContent = usuario;
-        
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        document.querySelector(".username").textContent = usuario;
         carregarDados();
-        errorMsg.textContent = '';
+        errorMsg.textContent = "";
       } else {
-        errorMsg.textContent = 'Usuário ou senha incorretos!';
+        errorMsg.textContent = "Usuário ou senha incorretos!";
       }
     }
 
     function fazerLogout() {
       usuarioLogado = null;
-      document.getElementById('dashboard').style.display = 'none';
-      document.getElementById('login-container').style.display = 'flex';
-      document.getElementById('usuario').value = '';
-      document.getElementById('senha').value = '';
-      document.getElementById('user-dropdown').classList.remove('show');
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("login-container").style.display = "flex";
+      document.getElementById("usuario").value = "";
+      document.getElementById("senha").value = "";
+      document.getElementById("user-dropdown").classList.remove("show");
     }
 
     // ========== FUNÇÕES DE DADOS ==========
@@ -304,103 +308,42 @@
     }
 
     async function carregarDados() {
-      const lojasList = document.getElementById('lojas-list');
-      
-      try {
-        const response = await fetch(API_URL);
-        const textoResposta = await response.text();
-        
-        let dadosAPI;
-        try {
-          dadosAPI = JSON.parse(textoResposta);
-        } catch (parseError) {
-          throw new Error("Resposta não é JSON válido");
+      const dadosSalvos = localStorage.getItem("dadosLojas");
+      if (dadosSalvos) {
+        const dadosAntigos = JSON.parse(dadosSalvos);
+        dadosLojas = {}; // Limpa para reconstruir
+        for (const lojaAntiga in dadosAntigos) {
+          const lojaNormalizada = lojaAntiga.toUpperCase().trim();
+          if (dadosLojas[lojaNormalizada]) {
+            // Se a loja já existe (devido a chaves com capitalização diferente), mescla as armações
+            dadosLojas[lojaNormalizada].push(...dadosAntigos[lojaAntiga]);
+          } else {
+            dadosLojas[lojaNormalizada] = dadosAntigos[lojaAntiga];
+          }
         }
-        
-        // Se retornar dados de usuário, ignora
-        if (dadosAPI && dadosAPI.usuario === "admin") {
-          throw new Error("API retornando dados de configuração");
-        }
-        
-        dadosLojas = {};
-        
-        if (Array.isArray(dadosAPI)) {
-          dadosAPI.forEach((item, index) => {
-            if (index === 0) return;
-            
-            const loja = item[0] || "Loja Desconhecida";
-            const marca = item[1] || "Sem marca";
-            const quantidade = parseInt(item[2]) || 0;
-            const modelo = item[3] || "Sem modelo";
-            const preco = item[4] || "R$ 0,00";
-            const categoria = item[5] || "Geral";
-            
-            if (!dadosLojas[loja]) dadosLojas[loja] = [];
-            
-            // VERIFICA se já existe esta armação na loja
-            const armaçãoExistente = dadosLojas[loja].find(a => 
-              a.marca === marca && a.modelo === modelo
-            );
-            
-            if (armaçãoExistente) {
-              // Atualiza a quantidade se já existir
-              armaçãoExistente.quantidade += quantidade;
-            } else if (modelo && modelo !== "Sem modelo") {
-              // Adiciona nova armação
-              dadosLojas[loja].push({
-                modelo: modelo,
-                marca: marca,
-                quantidade: quantidade,
-                preco: preco,
-                categoria: categoria
-              });
-            }
-          });
-        }
-        
-        salvarLocal();
-        carregarLojas();
-        
-      } catch (err) {
-        console.warn("Erro ao carregar da planilha, usando localStorage:", err);
-        
-        dadosLojas = JSON.parse(localStorage.getItem("dadosLojas")) || {};
-        
-        if (Object.keys(dadosLojas).length === 0) {
-          dadosLojas = {
-            "PRIMITIVA 1": [
-              { modelo: "Ray-Ban Aviador", marca: "Ray-Ban", quantidade: 15, preco: "R$ 350,00", categoria: "Luxo" },
-              { modelo: "Oakley Holbrook", marca: "Oakley", quantidade: 8, preco: "R$ 280,00", categoria: "Esportiva" }
-            ],
-            "DNIZ CENTRO": [
-              { modelo: "Charmant Elegance", marca: "Charmant", quantidade: 12, preco: "R$ 190,00", categoria: "Acetato" }
-            ]
-          };
-          salvarLocal();
-        }
-        
-        carregarLojas();
+        salvarLocal(); // Salva os dados normalizados de volta no localStorage
       }
+      carregarLojas();
     }
 
     // ========== FUNÇÕES DA INTERFACE ==========
     function carregarLojas() {
-      const lojasList = document.getElementById('lojas-list');
+      const lojasList = document.getElementById("lojas-list");
       const lojas = Object.keys(dadosLojas);
-      
+
       if (lojas.length === 0) {
-        lojasList.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">Nenhuma loja cadastrada</p>';
+        lojasList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma loja cadastrada</p>";
         return;
       }
 
       lojasList.innerHTML = lojas.map(loja => {
-        const totalArmações = dadosLojas[loja].length;
+        const totalArmacoes = dadosLojas[loja].length;
         const totalQuantidade = dadosLojas[loja].reduce((sum, item) => sum + item.quantidade, 0);
-        
+
         return `
           <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
-            <h3>${loja.toUpperCase()}</h3>
-            <p><strong>${totalArmações}</strong> modelos de armações</p>
+            <h3>${loja}</h3>
+            <p><strong>${totalArmacoes}</strong> modelos de armações</p>
             <p><strong>${totalQuantidade}</strong> unidades no total</p>
             <p><small>Clique para gerenciar</small></p>
           </div>
@@ -409,22 +352,21 @@
     }
 
     function abrirDetalhesLoja(lojaId) {
-      lojaAtual = lojaId;
-      document.getElementById('lojas-container').classList.remove('active-section');
-      document.getElementById('armacoes-container').classList.add('active-section');
-      document.getElementById('current-store-name').textContent = lojaId.toUpperCase();
-      
-      carregarArmacoes(lojaId);
-      carregarFiltros(lojaId);
-      mudarTab('lista'); // Volta para a tab de lista
+      lojaAtual = lojaId.toUpperCase().trim();
+      document.getElementById("lojas-container").classList.remove("active-section");
+      document.getElementById("armacoes-container").classList.add("active-section");
+      document.getElementById("current-store-name").textContent = lojaId;
+      carregarArmacoes(lojaAtual);
+      carregarFiltros(lojaAtual);
+      mudarTab("lista");
     }
 
     function carregarArmacoes(lojaId) {
-      const armacoesList = document.getElementById('armacoes-list');
+      const armacoesList = document.getElementById("armacoes-list");
       const armacoes = dadosLojas[lojaId] || [];
-      
+
       if (armacoes.length === 0) {
-        armacoesList.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">Nenhuma armação cadastrada nesta loja</p>';
+        armacoesList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma armação cadastrada nesta loja</p>";
         return;
       }
 
@@ -448,10 +390,10 @@
       if (!lojaAtual || !confirm(`Tem certeza que deseja remover ${marca} ${modelo}?`)) {
         return;
       }
-      
+
       const loja = dadosLojas[lojaAtual];
       const index = loja.findIndex(a => a.marca === marca && a.modelo === modelo);
-      
+
       if (index !== -1) {
         loja.splice(index, 1);
         salvarLocal();
@@ -463,30 +405,36 @@
     // ========== FUNÇÕES DE CADASTRO ==========
     async function cadastrarArmacao(event) {
       event.preventDefault();
-      
-      const marca = document.getElementById('cadastro-marca').value;
-      const modelo = document.getElementById('cadastro-modelo').value;
-      const quantidade = parseInt(document.getElementById('cadastro-quantidade').value);
-      const preco = document.getElementById('cadastro-preco').value;
-      const categoria = document.getElementById('cadastro-categoria').value;
-      const msgCadastro = document.getElementById('msgCadastro');
-      
-      if (!lojaAtual) {
-        msgCadastro.textContent = "Erro: Nenhuma loja selecionada";
+
+      const lojaInput = document.getElementById("cadastro-loja").value;
+      const loja = lojaInput.toUpperCase().trim();
+      const marca = document.getElementById("cadastro-marca").value;
+      const modelo = document.getElementById("cadastro-modelo").value;
+      const quantidade = parseInt(document.getElementById("cadastro-quantidade").value);
+      const preco = document.getElementById("cadastro-preco").value;
+      const categoria = document.getElementById("cadastro-categoria").value;
+      const msgCadastro = document.getElementById("msgCadastro");
+
+      if (!loja) {
+        msgCadastro.textContent = "Erro: O nome da loja é obrigatório.";
         msgCadastro.style.color = "red";
         return;
       }
-      
-      // Verifica se já existe esta armação
-      const loja = dadosLojas[lojaAtual];
-      const armaçãoExistente = loja.find(a => a.marca === marca && a.modelo === modelo);
-      
-      if (armaçãoExistente) {
+
+      // Garante que a loja existe na estrutura de dados
+      if (!dadosLojas[loja]) {
+        dadosLojas[loja] = [];
+      }
+
+      // Verifica se já existe esta armação na loja
+      const armacaoExistente = dadosLojas[loja].find(a => a.marca === marca && a.modelo === modelo);
+
+      if (armacaoExistente) {
         msgCadastro.textContent = "Erro: Esta armação já existe na loja. Use a opção 'Entrada/Saída' para adicionar mais unidades.";
         msgCadastro.style.color = "red";
         return;
       }
-      
+
       const novaArmacao = {
         marca: marca,
         modelo: modelo,
@@ -494,74 +442,80 @@
         preco: preco ? `R$ ${preco}` : "R$ 0,00",
         categoria: categoria || "Geral"
       };
-      
+
       // Adiciona localmente
-      loja.push(novaArmacao);
+      dadosLojas[loja].push(novaArmacao);
       salvarLocal();
-      
-      msgCadastro.textContent = "Armação cadastrada com sucesso!";
+
+      msgCadastro.textContent = `Armação cadastrada com sucesso na loja ${loja}!`;
       msgCadastro.style.color = "green";
-      
-      // Atualiza a visualização
-      carregarArmacoes(lojaAtual);
+
+      // Atualiza a visualização das lojas
       carregarLojas();
-      
+
       // Limpa o formulário
-      document.getElementById('cadastro-marca').value = '';
-      document.getElementById('cadastro-modelo').value = '';
-      document.getElementById('cadastro-quantidade').value = '';
-      document.getElementById('cadastro-preco').value = '';
-      document.getElementById('cadastro-categoria').value = '';
+      document.getElementById("formCadastro").reset();
     }
 
     // ========== FUNÇÕES DE MOVIMENTAÇÃO ==========
     async function registrarMovimentacao(event) {
       event.preventDefault();
-      
-      const marca = document.getElementById('movimentacao-marca').value;
-      const modelo = document.getElementById('movimentacao-modelo').value;
-      const tipo = document.getElementById('movimentacao-tipo').value;
-      const quantidade = parseInt(document.getElementById('movimentacao-quantidade').value);
-      const msgMovimentacao = document.getElementById('msgMovimentacao');
-      
-      if (!lojaAtual) {
-        msgMovimentacao.textContent = "Erro: Nenhuma loja selecionada";
+
+      const lojaInput = document.getElementById("movimentacao-loja").value;
+      const loja = lojaInput.toUpperCase().trim();
+      const marca = document.getElementById("movimentacao-marca").value;
+      const modelo = document.getElementById("movimentacao-modelo").value;
+      const tipo = document.getElementById("movimentacao-tipo").value;
+      const quantidade = parseInt(document.getElementById("movimentacao-quantidade").value);
+      const msgMovimentacao = document.getElementById("msgMovimentacao");
+
+      if (!loja) {
+        msgMovimentacao.textContent = "Erro: O nome da loja é obrigatório.";
         msgMovimentacao.style.color = "red";
         return;
       }
-      
-      const loja = dadosLojas[lojaAtual];
-      const armação = loja.find(a => a.marca === marca && a.modelo === modelo);
-      
-      if (!armação) {
+
+      if (!dadosLojas[loja]) {
+        msgMovimentacao.textContent = "Erro: Loja não encontrada";
+        msgMovimentacao.style.color = "red";
+        return;
+      }
+
+      const armacao = dadosLojas[loja].find(a => a.marca === marca && a.modelo === modelo);
+
+      if (!armacao) {
         msgMovimentacao.textContent = "Erro: Armação não encontrada nesta loja";
         msgMovimentacao.style.color = "red";
         return;
       }
-      
-      if (tipo === 'entrada') {
-        armação.quantidade += quantidade;
-        msgMovimentacao.textContent = `+${quantidade} unidades adicionadas ao estoque!`;
+
+      if (tipo === "entrada") {
+        armacao.quantidade += quantidade;
+        msgMovimentacao.textContent = `+${quantidade} unidades adicionadas ao estoque da loja ${loja}!`;
         msgMovimentacao.style.color = "green";
       } else {
-        if (armação.quantidade < quantidade) {
+        if (armacao.quantidade < quantidade) {
           msgMovimentacao.textContent = "Erro: Quantidade insuficiente em estoque";
           msgMovimentacao.style.color = "red";
           return;
         }
-        armação.quantidade -= quantidade;
-        msgMovimentacao.textContent = `-${quantidade} unidades removidas do estoque!`;
+        armacao.quantidade -= quantidade;
+        msgMovimentacao.textContent = `-${quantidade} unidades removidas do estoque da loja ${loja}!`;
         msgMovimentacao.style.color = "orange";
       }
-      
+
       salvarLocal();
-      carregarArmacoes(lojaAtual);
+
+      // Se estiver visualizando a loja afetada, atualiza a visualização
+      if (lojaAtual === loja) {
+        carregarArmacoes(lojaAtual);
+      }
+
+      // Sempre atualiza a lista de lojas
       carregarLojas();
-      
+
       // Limpa o formulário
-      document.getElementById('movimentacao-marca').value = '';
-      document.getElementById('movimentacao-modelo').value = '';
-      document.getElementById('movimentacao-quantidade').value = '';
+      document.getElementById("formMovimentacao").reset();
     }
 
     // ========== FUNÇÕES AUXILIARES ==========
@@ -569,19 +523,19 @@
       const armacoes = dadosLojas[lojaId] || [];
       const marcas = [...new Set(armacoes.map(a => a.marca))];
       const categorias = [...new Set(armacoes.map(a => a.categoria))];
-      
-      const filterBrand = document.getElementById('filter-brand');
-      const filterCategory = document.getElementById('filter-category');
-      
-      filterBrand.innerHTML = '<option value="">Todas as Marcas</option>';
-      filterCategory.innerHTML = '<option value="">Todas as Categorias</option>';
-      
+
+      const filterBrand = document.getElementById("filter-brand");
+      const filterCategory = document.getElementById("filter-category");
+
+      filterBrand.innerHTML = "<option value=\"\">Todas as Marcas</option>";
+      filterCategory.innerHTML = "<option value=\"\">Todas as Categorias</option>";
+
       marcas.forEach(marca => {
         if (marca && marca !== "Sem marca") {
           filterBrand.innerHTML += `<option value="${marca}">${marca}</option>`;
         }
       });
-      
+
       categorias.forEach(categoria => {
         if (categoria && categoria !== "Geral") {
           filterCategory.innerHTML += `<option value="${categoria}">${categoria}</option>`;
@@ -590,90 +544,175 @@
     }
 
     function filtrarLojas() {
-      const termo = document.getElementById('search-store').value.toLowerCase();
+      const termo = document.getElementById("search-store").value.toLowerCase();
       const lojas = Object.keys(dadosLojas);
-      const lojasFiltradas = lojas.filter(loja => 
+      const lojasFiltradas = lojas.filter(loja =>
         loja.toLowerCase().includes(termo)
       );
-      
-      const lojasList = document.getElementById('lojas-list');
-      
+
+      const lojasList = document.getElementById("lojas-list");
+
       if (lojasFiltradas.length === 0) {
-        lojasList.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">Nenhuma loja encontrada</p>';
+        lojasList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma loja encontrada</p>";
         return;
       }
-      
+
       lojasList.innerHTML = lojasFiltradas.map(loja => {
-        const totalArmações = dadosLojas[loja].length;
+        const totalArmacoes = dadosLojas[loja].length;
         const totalQuantidade = dadosLojas[loja].reduce((sum, item) => sum + item.quantidade, 0);
-        
+
         return `
           <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
-            <h3>${loja.toUpperCase()}</h3>
-            <p><strong>${totalArmações}</strong> modelos de armações</p>
+            <h3>${loja}</h3>
+            <p><strong>${totalArmacoes}</strong> modelos de armações</p>
             <p><strong>${totalQuantidade}</strong> unidades no total</p>
+            <p><small>Clique para gerenciar</small></p>
           </div>
         `;
       }).join('');
     }
 
-    function filtrarArmacoes() {
-      // Implementação do filtro (mantida do código anterior)
-    }
-
     function mudarTab(tabName) {
       // Esconde todas as tabs
-      document.querySelectorAll('.tab-content').forEach(tab => {
-        tab.classList.remove('active');
+      document.querySelectorAll(".tab-content").forEach(tab => {
+        tab.classList.remove("active");
       });
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.classList.remove("active");
       });
-      
+
       // Mostra a tab selecionada
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      document.getElementById(`tab-${tabName}`).classList.add("active");
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
     }
 
     // ========== EVENT LISTENERS ==========
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener("DOMContentLoaded", function() {
       // Login form
-      document.getElementById('loginForm').addEventListener('submit', processarLogin);
-      
+      document.getElementById("loginForm").addEventListener("submit", processarLogin);
+
       // User menu dropdown
-      document.getElementById('user-menu').addEventListener('click', function(e) {
+      document.getElementById("user-menu").addEventListener("click", function(e) {
         e.stopPropagation();
-        document.getElementById('user-dropdown').classList.toggle('show');
+        document.getElementById("user-dropdown").classList.toggle("show");
       });
-      
+
       // Fecha dropdown ao clicar fora
-      document.addEventListener('click', function() {
-        document.getElementById('user-dropdown').classList.remove('show');
+      document.addEventListener("click", function() {
+        document.getElementById("user-dropdown").classList.remove("show");
       });
-      
+
+      // Busca de lojas
+      document.getElementById("search-store").addEventListener("input", filtrarLojas);
+
+      // Busca de armações
+      document.getElementById("search-frame").addEventListener("input", function() {
+        const termo = this.value.toLowerCase();
+        const armacoes = dadosLojas[lojaAtual] || [];
+        const armacoesFiltradas = armacoes.filter(a =>
+          a.marca.toLowerCase().includes(termo) || a.modelo.toLowerCase().includes(termo)
+        );
+
+        const armacoesList = document.getElementById("armacoes-list");
+
+        if (armacoesFiltradas.length === 0) {
+          armacoesList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma armação encontrada</p>";
+          return;
+        }
+
+        armacoesList.innerHTML = armacoesFiltradas.map(armacao => `
+          <div class="frame-card">
+            <div class="frame-actions">
+              <button class="btn-remove" onclick="removerArmacao('${armacao.marca}', '${armacao.modelo}')" title="Remover armação">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <h4>${armacao.modelo}</h4>
+            <p><strong>Marca:</strong> ${armacao.marca}</p>
+            <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
+            <p><strong>Preço:</strong> ${armacao.preco}</p>
+            <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+          </div>
+        `).join('');
+      });
+
+      // Filtros da lista de armações
+      document.getElementById("filter-brand").addEventListener("change", aplicarFiltros);
+      document.getElementById("filter-category").addEventListener("change", aplicarFiltros);
+      document.getElementById("filter-price").addEventListener("change", aplicarFiltros);
+      document.getElementById("filter-quantity").addEventListener("change", aplicarFiltros);
+
       // Botão voltar para lojas
-      document.getElementById('back-to-stores').addEventListener('click', function() {
-        document.getElementById('armacoes-container').classList.remove('active-section');
-        document.getElementById('lojas-container').classList.add('active-section');
+      document.getElementById("back-to-stores").addEventListener("click", function() {
+        document.getElementById("armacoes-container").classList.remove("active-section");
+        document.getElementById("lojas-container").classList.add("active-section");
         lojaAtual = null;
+        document.getElementById("search-frame").value = "";
       });
-      
-      // Search stores
-      document.getElementById('search-store').addEventListener('keyup', filtrarLojas);
-      
-      // Tabs
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-          mudarTab(this.getAttribute('data-tab'));
+
+      // Formulários de cadastro e movimentação
+      document.getElementById("formCadastro").addEventListener("submit", cadastrarArmacao);
+      document.getElementById("formMovimentacao").addEventListener("submit", registrarMovimentacao);
+
+      // Adiciona listeners para as tabs
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          mudarTab(tab.dataset.tab);
         });
       });
-      
-      // Form cadastro
-      document.getElementById('formCadastro').addEventListener('submit', cadastrarArmacao);
-      
-      // Form movimentação
-      document.getElementById('formMovimentacao').addEventListener('submit', registrarMovimentacao);
     });
+
+    // ========== FUNÇÃO DE APLICAÇÃO DE FILTROS ==========
+    function aplicarFiltros() {
+      const brandFilter = document.getElementById("filter-brand").value;
+      const categoryFilter = document.getElementById("filter-category").value;
+      const priceFilter = document.getElementById("filter-price").value;
+      const quantityFilter = document.getElementById("filter-quantity").value;
+
+      let armacoes = dadosLojas[lojaAtual] || [];
+
+      if (brandFilter) {
+        armacoes = armacoes.filter(a => a.marca === brandFilter);
+      }
+
+      if (categoryFilter) {
+        armacoes = armacoes.filter(a => a.categoria === categoryFilter);
+      }
+
+      if (priceFilter) {
+        const [minPrice, maxPrice] = priceFilter.split("-").map(Number);
+        armacoes = armacoes.filter(a => {
+          let precoNumerico = parseFloat(a.preco.replace(/\D/g, "")) || 0;
+          return precoNumerico >= minPrice && precoNumerico <= maxPrice;
+        });
+      }
+
+      if (quantityFilter) {
+        const [minQ, maxQ] = quantityFilter.split("-").map(Number);
+        armacoes = armacoes.filter(a => a.quantidade >= minQ && a.quantidade <= maxQ);
+      }
+
+      const armacoesList = document.getElementById("armacoes-list");
+      if (armacoes.length === 0) {
+        armacoesList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma armação encontrada</p>";
+        return;
+      }
+
+      armacoesList.innerHTML = armacoes.map(armacao => `
+        <div class="frame-card">
+          <div class="frame-actions">
+            <button class="btn-remove" onclick="removerArmacao('${armacao.marca}', '${armacao.modelo}')" title="Remover armação">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <h4>${armacao.modelo}</h4>
+          <p><strong>Marca:</strong> ${armacao.marca}</p>
+          <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
+          <p><strong>Preço:</strong> ${armacao.preco}</p>
+          <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+        </div>
+      `).join('');
+    }
   </script>
 </body>
 </html>
