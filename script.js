@@ -143,4 +143,5 @@ document.querySelectorAll(".card-loja").forEach((card) => {
     abrirDetalhesLoja(lojaId);
   });
 });
- === CONFIGURAÇÃO: coloque aqui a URL da sua API do Google Apps Script ===
+ === https://script.google.com/macros/s/AKfycbxFGsap0ifhvlK4WuyyGpMAVatErHO-taoFjaMEqqygZ3vSLgE0Qx_4OhWluzVpmGn8sA/exec ===
+
