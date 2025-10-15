@@ -4,7 +4,6 @@ Este projeto é um **portal web** desenvolvido em **HTML, CSS e JavaScript**, cr
 
 ## 🌐 Acesse o sistema online
 🔗 **[Clique aqui para acessar o site](https://languido1.github.io/CONTROLE-DE-ESTOQUE/)**  
-*(o link estará ativo após a publicação no GitHub Pages)*
 
 ## 📁 Estrutura do projeto
 - `index.html` → Página principal do sistema (antigo `estoque.htm`)  
