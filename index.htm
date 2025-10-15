@@ -183,6 +183,18 @@
     let usuarioLogado = null;
     let lojaAtual = null;
 
+    // Função para limpar dados inválidos da tela
+    function limparDadosInvalidos() {
+      // Remove qualquer texto JSON que apareça no body
+      const body = document.body;
+      const bodyText = body.textContent || body.innerText;
+      
+      if (bodyText.includes('{"id":1,"nome":"Administrador"')) {
+        // Limpa o conteúdo inválido
+        body.innerHTML = body.innerHTML.split('{"id":1,"nome":"Administrador"')[0];
+      }
+    }
+
     // ========== FUNÇÕES DE AUTENTICAÇÃO ==========
     function processarLogin(event) {
       event.preventDefault();
@@ -215,25 +227,44 @@
 
     async function carregarDados() {
       try {
-        const response = await fetch(API_URL);
-        const dadosPlanilha = await response.json();
+        // URL com parâmetro para evitar cache
+        const response = await fetch(API_URL + '?timestamp=' + new Date().getTime());
+        const textoResposta = await response.text();
+        
+        console.log("Resposta bruta:", textoResposta);
+        
+        // Verifica se a resposta é JSON válido
+        let dadosPlanilha;
+        try {
+          dadosPlanilha = JSON.parse(textoResposta);
+        } catch (parseError) {
+          console.error("Erro ao parsear JSON:", parseError);
+          // Se não for JSON válido, usa dados locais
+          throw new Error("Resposta inválida da planilha");
+        }
         
         dadosLojas = {};
-        dadosPlanilha.forEach(item => {
-          const loja = item.Empresa || item.loja;
-          if (!dadosLojas[loja]) dadosLojas[loja] = [];
-          
-          dadosLojas[loja].push({
-            modelo: item.Modelo || item.modelo,
-            marca: item.Marca || item.marca,
-            quantidade: item.Saldo || item.quantidade,
-            preco: item.Preço || item.preco,
-            categoria: item.Categoria || item.categoria
+        
+        // Processa os dados - adapte conforme a estrutura real
+        if (Array.isArray(dadosPlanilha)) {
+          dadosPlanilha.forEach(item => {
+            // Tenta diferentes nomes de campos
+            const loja = item.Empresa || item.empresa || item.loja || "Loja Desconhecida";
+            if (!dadosLojas[loja]) dadosLojas[loja] = [];
+            
+            dadosLojas[loja].push({
+              modelo: item.Modelo || item.modelo || "Sem modelo",
+              marca: item.Marca || item.marca || "Sem marca",
+              quantidade: item.Saldo || item.quantidade || item.Quantidade || 0,
+              preco: item.Preço || item.preco || item.Preco || "R$ 0,00",
+              categoria: item.Categoria || item.categoria || "Geral"
+            });
           });
-        });
+        }
         
         salvarLocal();
         console.log('Dados carregados:', dadosLojas);
+        
       } catch (err) {
         console.warn("Erro ao carregar da planilha, usando localStorage:", err);
         dadosLojas = JSON.parse(localStorage.getItem("dadosLojas")) || {};
@@ -477,6 +508,8 @@
 
     // ========== EVENT LISTENERS ==========
     document.addEventListener('DOMContentLoaded', function() {
+      limparDadosInvalidos();
+      
       // Botão voltar para lojas
       document.getElementById('back-to-stores').addEventListener('click', function() {
         document.getElementById('armacoes-container').classList.remove('active-section');
