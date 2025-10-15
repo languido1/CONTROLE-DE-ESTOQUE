@@ -67,6 +67,19 @@
     .filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 15px 0; }
     .filters select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: white; cursor: pointer; }
     .filters select:hover { border-color: #4299e1; }
+
+    /* Modal */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: white; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { color: var(--primary); }
+    .close-modal { background: none; border: none; font-size: 24px; cursor: pointer; color: #718096; }
+    .modal-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    .modal-table th, .modal-table td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .modal-table th { background: var(--light); font-weight: 600; }
+    .modal-form { margin-top: 20px; }
+    .modal-form input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; }
+    .modal-form button { background: var(--secondary); color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -98,7 +111,7 @@
           <h2><i class="fas fa-store"></i> Nossas Lojas</h2>
           <div class="search-box">
             <i class="fas fa-search"></i>
-            <input id="search-store" type="text" placeholder="Buscar loja..." />
+            <input id="search-store" type="text" placeholder="Buscar loja..." onkeyup="filtrarLojas()" />
           </div>
         </div>
         <div id="lojas-list" class="grid-container"></div>
@@ -111,23 +124,27 @@
             <button id="back-to-stores" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
             <div class="search-box">
               <i class="fas fa-search"></i>
-              <input id="search-frame" type="text" placeholder="Buscar armação..." />
+              <input id="search-frame" type="text" placeholder="Buscar armação..." onkeyup="filtrarArmacoes()" />
             </div>
           </div>
         </div>
 
         <!-- FILTROS -->
         <div class="filters">
-          <select id="filter-brand"><option value="">Todas as Marcas</option></select>
-          <select id="filter-category"><option value="">Todas as Categorias</option></select>
-          <select id="filter-price">
+          <select id="filter-brand" onchange="filtrarArmacoes()">
+            <option value="">Todas as Marcas</option>
+          </select>
+          <select id="filter-category" onchange="filtrarArmacoes()">
+            <option value="">Todas as Categorias</option>
+          </select>
+          <select id="filter-price" onchange="filtrarArmacoes()">
             <option value="">Todos os Preços</option>
             <option value="0-199">Até R$ 199</option>
             <option value="200-299">R$ 200 a R$ 299</option>
             <option value="300-399">R$ 300 a R$ 399</option>
             <option value="400-9999">Acima de R$ 400</option>
           </select>
-          <select id="filter-quantity">
+          <select id="filter-quantity" onchange="filtrarArmacoes()">
             <option value="">Todas as Quantidades</option>
             <option value="1-5">1 a 5</option>
             <option value="6-10">6 a 10</option>
@@ -139,7 +156,7 @@
         <!-- FORMULÁRIO PARA CADASTRAR / ATUALIZAR -->
         <div id="cadastro-armacao" style="margin:20px 0; background:#fff; padding:15px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
           <h3 style="margin-bottom:10px; color:#2a4365;">➕ Cadastrar / Atualizar Armação</h3>
-          <form id="formArmacao">
+          <form id="formArmacao" onsubmit="salvarArmacao(event)">
             <input type="text" id="empresa" placeholder="Empresa (Ex: DNIZ PRIMITIVA I)" required style="margin:5px; padding:8px;">
             <input type="text" id="marca" placeholder="Marca" required style="margin:5px; padding:8px;">
             <input type="text" id="modelo" placeholder="Modelo" required style="margin:5px; padding:8px;">
@@ -152,7 +169,6 @@
           </form>
           <p id="msgRetorno" style="margin-top:10px; font-weight:600;"></p>
         </div>
-
       </div>
     </main>
     <footer class="dashboard-footer">
@@ -162,193 +178,325 @@
   </div>
 
   <script>
-    // ========== LOGIN ==========
-    function processarLogin(event) {
-      event.preventDefault();
-      const usuario = document.getElementById('usuario').value.trim();
-      const senha = document.getElementById('senha').value.trim();
-      const errorMsg = document.getElementById('errorMsg');
-
-      if (usuario === "Gabriel" && senha === "1234") {
-        errorMsg.textContent = "";
-        document.getElementById('login-container').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-        loadStores();
-      } else {
-        errorMsg.textContent = "Usuário ou senha inválidos.";
-      }
-    }
-
-    // ========== DADOS FAKE (para testes, depois substituir por dados reais) ==========
-    const lojas = [
-      {
-        id: 1,
-        nome: "PRIMITIVA I",
-        totalArmacoes: 302,
-        armações: [
-          { modelo: "ACT-2024", marca: "ACTIVE", quantidade: 2, preco: "R$ 150,00", categoria: "Solar" },
-          { modelo: "ALP-345", marca: "ALLPROT", quantidade: 3, preco: "R$ 200,00", categoria: "Esportiva" },
-          { modelo: "AH-789", marca: "ANA HICKMANN", quantidade: 18, preco: "R$ 180,00", categoria: "Fashion" }
-        ]
-      },
-      // ... outras lojas ...
-    ];
-
-    // ========== REFS DOM ==========
-    const lojasList = document.getElementById('lojas-list');
-    const armaoesList = document.getElementById('armacoes-list');
-    const currentStoreName = document.getElementById('current-store-name');
-    const backButton = document.getElementById('back-to-stores');
-    const searchStore = document.getElementById('search-store');
-    const searchFrame = document.getElementById('search-frame');
-    const filterBrand = document.getElementById('filter-brand');
-    const filterCategory = document.getElementById('filter-category');
-    const filterPrice = document.getElementById('filter-price');
-    const filterQuantity = document.getElementById('filter-quantity');
-
+    const API_URL = "https://script.google.com/macros/s/AKfycbxFGsap0ifhvlK4WuyyGpMAVatErHO-taoFjaMEqqygZ3vSLgE0Qx_4OhWluzVpmGn8sA/exec";
+    let dadosLojas = {};
+    let usuarioLogado = null;
     let lojaAtual = null;
 
-    // ========== CARREGAR LOJAS ==========
-    function loadStores() {
-      lojasList.innerHTML = '';
-      lojas.forEach(loja => {
-        const storeCard = document.createElement('div');
-        storeCard.className = 'store-card';
-        storeCard.innerHTML = `<h3>${loja.nome}</h3><p>Total de armações: ${loja.totalArmacoes}</p>`;
-        storeCard.addEventListener('click', () => showFrames(loja));
-        lojasList.appendChild(storeCard);
-      });
+    // ========== FUNÇÕES DE AUTENTICAÇÃO ==========
+    function processarLogin(event) {
+      event.preventDefault();
+      const usuario = document.getElementById('usuario').value;
+      const senha = document.getElementById('senha').value;
+      const errorMsg = document.getElementById('errorMsg');
+
+      // Credenciais fixas para demonstração
+      if (usuario === 'admin' && senha === '1234') {
+        usuarioLogado = usuario;
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.querySelector('.username').textContent = usuario;
+        
+        // Carregar dados ao fazer login
+        carregarDados().then(() => {
+          carregarLojas();
+        });
+        
+        errorMsg.textContent = '';
+      } else {
+        errorMsg.textContent = 'Usuário ou senha incorretos!';
+      }
     }
 
-    // ========== BUSCAR IMAGEM NO GOOGLE (Custom Search) ==========
-    async function buscarImagemGoogle(query) {
-      const apiKey = "COLE_AQUI_SUA_API_KEY";
-      const cx = "COLE_AQUI_SEU_CX";
+    // ========== FUNÇÕES DE DADOS ==========
+    function salvarLocal() {
+      localStorage.setItem("dadosLojas", JSON.stringify(dadosLojas));
+    }
 
-      const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&cx=${cx}&searchType=image&num=1&key=${apiKey}`;
+    async function carregarDados() {
       try {
-        const response = await fetch(url);
-        const data = await response.json();
-        return data.items && data.items.length > 0 ? data.items[0].link : "https://via.placeholder.com/300x150?text=Sem+Imagem";
-      } catch (e) {
-        console.error("Erro ao buscar imagem:", e);
-        return "https://via.placeholder.com/300x150?text=Sem+Imagem";
+        const response = await fetch(API_URL);
+        const dadosPlanilha = await response.json();
+        
+        dadosLojas = {};
+        dadosPlanilha.forEach(item => {
+          const loja = item.Empresa || item.loja;
+          if (!dadosLojas[loja]) dadosLojas[loja] = [];
+          
+          dadosLojas[loja].push({
+            modelo: item.Modelo || item.modelo,
+            marca: item.Marca || item.marca,
+            quantidade: item.Saldo || item.quantidade,
+            preco: item.Preço || item.preco,
+            categoria: item.Categoria || item.categoria
+          });
+        });
+        
+        salvarLocal();
+        console.log('Dados carregados:', dadosLojas);
+      } catch (err) {
+        console.warn("Erro ao carregar da planilha, usando localStorage:", err);
+        dadosLojas = JSON.parse(localStorage.getItem("dadosLojas")) || {};
+        
+        // Dados de exemplo caso não tenha nada
+        if (Object.keys(dadosLojas).length === 0) {
+          dadosLojas = {
+            "DNIZ PRIMITIVA I": [
+              { modelo: "Ray-Ban Aviador", marca: "Ray-Ban", quantidade: 15, preco: "R$ 350,00", categoria: "Luxo" },
+              { modelo: "Oakley Holbrook", marca: "Oakley", quantidade: 8, preco: "R$ 280,00", categoria: "Esportiva" }
+            ],
+            "DNIZ CENTRO": [
+              { modelo: "Charmant Elegance", marca: "Charmant", quantidade: 12, preco: "R$ 190,00", categoria: "Acetato" },
+              { modelo: "Silhouette Titan", marca: "Silhouette", quantidade: 5, preco: "R$ 420,00", categoria: "Luxo" }
+            ]
+          };
+          salvarLocal();
+        }
       }
     }
 
-    // ========== RENDERIZAR ARMAÇÕES ==========
-    async function renderFrames(lista) {
-      armaoesList.innerHTML = '';
-      for (const armacao of lista) {
-        const frameCard = document.createElement('div');
-        frameCard.className = 'frame-card';
+    async function salvarNaPlanilha(armacao) {
+      // Salvar no localStorage primeiro
+      const lojaId = armacao.loja;
+      if (!dadosLojas[lojaId]) dadosLojas[lojaId] = [];
+      
+      if (armacao.action === "add") {
+        dadosLojas[lojaId].push({
+          modelo: armacao.modelo,
+          marca: armacao.marca,
+          quantidade: armacao.quantidade,
+          preco: "R$ 0,00", // Valor padrão
+          categoria: "Geral" // Categoria padrão
+        });
+      }
+      
+      salvarLocal();
 
-        const query = `${armacao.marca} ${armacao.modelo}`;
-        const imgUrl = await buscarImagemGoogle(query);
-
-        frameCard.innerHTML = `
-          <img src="${imgUrl}" alt="${armacao.modelo}" style="width:100%; border-radius:8px; margin-bottom:10px;">
-          <h4>${armacao.modelo}</h4>
-          <p>Marca: ${armacao.marca}</p>
-          <p>Quantidade: ${armacao.quantidade}</p>
-          <p class="frame-price">Preço: ${armacao.preco}</p>
-          <p>Categoria: ${armacao.categoria}</p>
-        `;
-
-        armaoesList.appendChild(frameCard);
+      // Tentar salvar na planilha
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(armacao),
+          headers: { "Content-Type": "application/json" }
+        });
+        const resultado = await response.json();
+        console.log("Resposta da planilha:", resultado);
+        return resultado;
+      } catch (err) {
+        console.error("Erro ao salvar na planilha, mas salvo no localStorage:", err);
+        return { status: "error", message: "Erro de conexão" };
       }
     }
 
-    // ========== ABRIR LOJA ==========
-    function showFrames(loja) {
-      lojaAtual = loja;
-      currentStoreName.textContent = loja.nome;
+    // ========== FUNÇÕES DA INTERFACE ==========
+    function carregarLojas() {
+      const lojasList = document.getElementById('lojas-list');
+      const lojas = Object.keys(dadosLojas);
+      
+      if (lojas.length === 0) {
+        lojasList.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">Nenhuma loja cadastrada</p>';
+        return;
+      }
 
-      const marcas = [...new Set(loja.armações.map(a => a.marca))];
-      const categorias = [...new Set(loja.armações.map(a => a.categoria))];
-      filterBrand.innerHTML = '<option value="">Todas as Marcas</option>' + marcas.map(m => `<option value="${m}">${m}</option>`).join('');
-      filterCategory.innerHTML = '<option value="">Todas as Categorias</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+      lojasList.innerHTML = lojas.map(loja => `
+        <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
+          <h3>${loja.toUpperCase()}</h3>
+          <p>${dadosLojas[loja].length} armações cadastradas</p>
+          <p><small>Clique para ver detalhes</small></p>
+        </div>
+      `).join('');
+    }
 
-      renderFrames(loja.armações);
+    function filtrarLojas() {
+      const termo = document.getElementById('search-store').value.toLowerCase();
+      const lojas = Object.keys(dadosLojas);
+      const lojasFiltradas = lojas.filter(loja => 
+        loja.toLowerCase().includes(termo)
+      );
+      
+      const lojasList = document.getElementById('lojas-list');
+      lojasList.innerHTML = lojasFiltradas.map(loja => `
+        <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
+          <h3>${loja.toUpperCase()}</h3>
+          <p>${dadosLojas[loja].length} armações cadastradas</p>
+          <p><small>Clique para ver detalhes</small></p>
+        </div>
+      `).join('');
+    }
+
+    function abrirDetalhesLoja(lojaId) {
+      lojaAtual = lojaId;
       document.getElementById('lojas-container').classList.remove('active-section');
       document.getElementById('armacoes-container').classList.add('active-section');
+      document.getElementById('current-store-name').textContent = lojaId.toUpperCase();
+      
+      // Preencher o campo empresa no formulário
+      document.getElementById('empresa').value = lojaId;
+      
+      carregarArmacoes(lojaId);
+      carregarFiltros(lojaId);
     }
 
-    // ========== FILTROS ==========
-    function aplicarFiltros() {
+    function carregarFiltros(lojaId) {
+      const armacoes = dadosLojas[lojaId] || [];
+      const marcas = [...new Set(armacoes.map(a => a.marca))];
+      const categorias = [...new Set(armacoes.map(a => a.categoria))];
+      
+      const filterBrand = document.getElementById('filter-brand');
+      const filterCategory = document.getElementById('filter-category');
+      
+      filterBrand.innerHTML = '<option value="">Todas as Marcas</option>';
+      filterCategory.innerHTML = '<option value="">Todas as Categorias</option>';
+      
+      marcas.forEach(marca => {
+        filterBrand.innerHTML += `<option value="${marca}">${marca}</option>`;
+      });
+      
+      categorias.forEach(categoria => {
+        filterCategory.innerHTML += `<option value="${categoria}">${categoria}</option>`;
+      });
+    }
+
+    function carregarArmacoes(lojaId) {
+      const armacoesList = document.getElementById('armacoes-list');
+      const armacoes = dadosLojas[lojaId] || [];
+      
+      if (armacoes.length === 0) {
+        armacoesList.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">Nenhuma armação cadastrada nesta loja</p>';
+        return;
+      }
+
+      armacoesList.innerHTML = armacoes.map(armacao => `
+        <div class="frame-card">
+          <h4>${armacao.modelo}</h4>
+          <p><strong>Marca:</strong> ${armacao.marca}</p>
+          <p><strong>Quantidade:</strong> ${armacao.quantidade}</p>
+          <p><strong>Preço:</strong> ${armacao.preco}</p>
+          <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+        </div>
+      `).join('');
+    }
+
+    function filtrarArmacoes() {
       if (!lojaAtual) return;
-      const framesFiltrados = lojaAtual.armações.filter(armacao => {
-        const preco = parseFloat(armacao.preco.replace("R$","").replace(".","").replace(",",".").trim());
-        const qtd = armacao.quantidade;
-        const passaMarca = !filterBrand.value || armacao.marca === filterBrand.value;
-        const passaCategoria = !filterCategory.value || armacao.categoria === filterCategory.value;
-        let passaPreco = true;
-        if (filterPrice.value) {
-          const [min, max] = filterPrice.value.split('-').map(Number);
-          passaPreco = preco >= min && preco <= max;
+      
+      const termo = document.getElementById('search-frame').value.toLowerCase();
+      const marcaFiltro = document.getElementById('filter-brand').value;
+      const categoriaFiltro = document.getElementById('filter-category').value;
+      const precoFiltro = document.getElementById('filter-price').value;
+      const quantidadeFiltro = document.getElementById('filter-quantity').value;
+      
+      const armacoes = dadosLojas[lojaAtual] || [];
+      const armacoesFiltradas = armacoes.filter(armacao => {
+        // Filtro por texto
+        const textoMatch = armacao.modelo.toLowerCase().includes(termo) || 
+                          armacao.marca.toLowerCase().includes(termo);
+        
+        // Filtro por marca
+        const marcaMatch = !marcaFiltro || armacao.marca === marcaFiltro;
+        
+        // Filtro por categoria
+        const categoriaMatch = !categoriaFiltro || armacao.categoria === categoriaFiltro;
+        
+        // Filtro por preço
+        let precoMatch = true;
+        if (precoFiltro) {
+          const precoNum = parseFloat(armacao.preco.replace('R$', '').replace(',', '.').trim());
+          const [min, max] = precoFiltro.split('-').map(Number);
+          precoMatch = precoNum >= min && precoNum <= max;
         }
-        let passaQtd = true;
-        if (filterQuantity.value) {
-          const [min, max] = filterQuantity.value.split('-').map(Number);
-          passaQtd = qtd >= min && qtd <= max;
+        
+        // Filtro por quantidade
+        let quantidadeMatch = true;
+        if (quantidadeFiltro) {
+          const [min, max] = quantidadeFiltro.split('-').map(Number);
+          quantidadeMatch = armacao.quantidade >= min && armacao.quantidade <= max;
         }
-        return passaMarca && passaCategoria && pasaPreco && passaQtd;
+        
+        return textoMatch && marcaMatch && categoriaMatch && precoMatch && quantidadeMatch;
       });
-      renderFrames(framesFiltrados);
+      
+      const armacoesList = document.getElementById('armacoes-list');
+      
+      if (armacoesFiltradas.length === 0) {
+        armacoesList.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">Nenhuma armação encontrada</p>';
+        return;
+      }
+      
+      armacoesList.innerHTML = armacoesFiltradas.map(armacao => `
+        <div class="frame-card">
+          <h4>${armacao.modelo}</h4>
+          <p><strong>Marca:</strong> ${armacao.marca}</p>
+          <p><strong>Quantidade:</strong> ${armacao.quantidade}</p>
+          <p><strong>Preço:</strong> ${armacao.preco}</p>
+          <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+        </div>
+      `).join('');
     }
 
-    [filterBrand, filterCategory, filterPrice, filterQuantity].forEach(filtro => {
-      filtro.addEventListener('change', aplicarFiltros);
-    });
-
-    backButton.addEventListener('click', () => {
-      document.getElementById('armacoes-container').classList.remove('active-section');
-      document.getElementById('lojas-container').classList.add('active-section');
-    });
-
-    searchStore.addEventListener('input', (e) => {
-      const termo = e.target.value.toLowerCase();
-      document.querySelectorAll('.store-card').forEach(card => {
-        card.style.display = card.querySelector('h3').textContent.toLowerCase().includes(termo) ? 'block' : 'none';
-      });
-    });
-
-    searchFrame.addEventListener('input', (e) => {
-      const termo = e.target.value.toLowerCase();
-      document.querySelectorAll('.frame-card').forEach(card => {
-        card.style.display = card.textContent.toLowerCase().includes(termo) ? 'block' : 'none';
-      });
-    });
-
-    // ===== CADASTRO / ATUALIZAÇÃO =====
-    const formArmacao = document.getElementById("formArmacao");
-    const msgRetorno = document.getElementById("msgRetorno");
-
-    formArmacao.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const empresa = document.getElementById("empresa").value;
-      const marca = document.getElementById("marca").value;
-      const modelo = document.getElementById("modelo").value;
-      const quantidade = parseInt(document.getElementById("quantidade").value);
-      const acao = document.getElementById("acao").value;
-
-      msgRetorno.textContent = "Enviando...";
-
+    async function salvarArmacao(event) {
+      event.preventDefault();
+      
+      const empresa = document.getElementById('empresa').value;
+      const marca = document.getElementById('marca').value;
+      const modelo = document.getElementById('modelo').value;
+      const quantidade = document.getElementById('quantidade').value;
+      const acao = document.getElementById('acao').value;
+      const msgRetorno = document.getElementById('msgRetorno');
+      
+      const armacao = {
+        loja: empresa,
+        marca: marca,
+        modelo: modelo,
+        quantidade: parseInt(quantidade),
+        action: acao
+      };
+      
       try {
-        await fetch("COLE_AQUI_SEU_LINK_EXEC", {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: acao, empresa, marca, modelo, quantidade })
-        });
-        msgRetorno.textContent = "✅ Registro enviado com sucesso!";
-        formArmacao.reset();
+        const resultado = await salvarNaPlanilha(armacao);
+        msgRetorno.textContent = resultado.message || "Salvo com sucesso!";
+        msgRetorno.style.color = resultado.status === "error" ? "red" : "green";
+        
+        // Recarregar os dados e a visualização
+        if (lojaAtual) {
+          await carregarDados();
+          carregarArmacoes(lojaAtual);
+          carregarFiltros(lojaAtual);
+        }
+        
+        // Limpar o formulário
+        document.getElementById('marca').value = '';
+        document.getElementById('modelo').value = '';
+        document.getElementById('quantidade').value = '';
+        
       } catch (error) {
-        msgRetorno.textContent = "❌ Erro ao enviar dados.";
-        console.error(error);
+        msgRetorno.textContent = "Erro ao salvar: " + error.message;
+        msgRetorno.style.color = "red";
+      }
+    }
+
+    // ========== EVENT LISTENERS ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      // Botão voltar para lojas
+      document.getElementById('back-to-stores').addEventListener('click', function() {
+        document.getElementById('armacoes-container').classList.remove('active-section');
+        document.getElementById('lojas-container').classList.add('active-section');
+        lojaAtual = null;
+      });
+      
+      // Verificar se já está logado
+      const usuarioSalvo = localStorage.getItem('usuarioLogado');
+      if (usuarioSalvo) {
+        usuarioLogado = usuarioSalvo;
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        document.querySelector('.username').textContent = usuarioSalvo;
+        
+        carregarDados().then(() => {
+          carregarLojas();
+        });
       }
     });
-
   </script>
 </body>
 </html>
