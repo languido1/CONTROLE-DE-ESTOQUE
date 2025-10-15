@@ -1,30 +1,45 @@
-// === CONFIGURAÇÃO: coloque aqui a URL da sua API do Google Apps Script ===
-const API_URL = "COLE_AQUI_SUA_URL_DO_APPS_SCRIPT";
+//function doPost(e) {
+  const ss = SpreadsheetApp.openById('1RohEHcauBGKEagwhrwYHgVyUblT4-iH4GrtnKLweatM');
+  const sheet = ss.getSheetByName('Armações Diniz');
+  const dados = JSON.parse(e.postData.contents);
 
-// Carrega do localStorage ou usa objeto vazio
-let dadosLojas = JSON.parse(localStorage.getItem("dadosLojas")) || {};
+  if (dados.action === "add") {
+    // Colunas: Empresa, Marca, Saldo, Modelo, DataHora
+    sheet.appendRow([
+      dados.empresa,
+      dados.marca,
+      dados.quantidade,
+      dados.modelo,
+      new Date()
+    ]);
+    return ContentService.createTextOutput("Adicionado");
+  }
 
-// Salvar localmente
-function salvarLocal() {
-  localStorage.setItem("dadosLojas", JSON.stringify(dadosLojas));
+  if (dados.action === "update") {
+    const linhas = sheet.getDataRange().getValues();
+    for (let i = 1; i < linhas.length; i++) {
+      const marca = linhas[i][1];
+      const modelo = linhas[i][3];
+      if (marca === dados.marca && modelo === dados.modelo) {
+        // coluna 3 é “Saldo”
+        const valorAtual = Number(linhas[i][2]);
+        const novoValor = valorAtual + Number(dados.quantidade); // se for saída, quantidade pode ser negativa
+        sheet.getRange(i + 1, 3).setValue(novoValor);
+        // coluna 5 será DataHora (nova coluna que você deve ter)
+        sheet.getRange(i + 1, 5).setValue(new Date());
+        return ContentService.createTextOutput("Atualizado");
+      }
+    }
+    return ContentService.createTextOutput("Não encontrado");
+  }
+
+  return ContentService.createTextOutput("Ação inválida");
 }
-
-// Buscar dados da planilha e atualizar localStorage
-async function carregarDados() {
-  try {
-    const resp = await fetch(API_URL);
-    const dados = await resp.json();
-
-    // Organiza por loja
-    dadosLojas = {};
-    dados.forEach(item => {
-      if (!dadosLojas[item.loja]) dadosLojas[item.loja] = [];
-      dadosLojas[item.loja].push(item);
-    });
 
     salvarLocal();
   } catch (err) {
     console.warn("Erro ao carregar da planilha, usando localStorage:", err);
+    // Se falhar, usa apenas os dados locais
     dadosLojas = JSON.parse(localStorage.getItem("dadosLojas")) || {};
   }
 }
@@ -52,43 +67,15 @@ async function salvarNaPlanilha(lojaId, armacao) {
 
 // Função para abrir os detalhes da loja
 async function abrirDetalhesLoja(lojaId) {
-  await carregarDados();
+  await carregarDados(); // tenta carregar os dados atualizados
   const loja = dadosLojas[lojaId] || [];
-
-  const marcas = [...new Set(loja.map(item => item.marca))];
-  const categorias = [...new Set(loja.map(item => item.categoria))];
 
   const modalHTML = `
     <div class="modal-armacoes">
       <h2>${lojaId.toUpperCase()}</h2>
       <button onclick="fecharModal()">Fechar</button>
 
-      <!-- FILTROS -->
-      <div class="filtros" style="margin:10px 0;display:flex;gap:10px;flex-wrap:wrap;">
-        <select id="filtroMarca">
-          <option value="">Todas as Marcas</option>
-          ${marcas.map(m => `<option value="${m}">${m}</option>`).join('')}
-        </select>
-        <select id="filtroCategoria">
-          <option value="">Todas as Categorias</option>
-          ${categorias.map(c => `<option value="${c}">${c}</option>`).join('')}
-        </select>
-        <select id="filtroPreco">
-          <option value="">Todos os Preços</option>
-          <option value="0-199">Até R$ 199</option>
-          <option value="200-299">R$ 200 a R$ 299</option>
-          <option value="300-399">R$ 300 a R$ 399</option>
-          <option value="400-9999">Acima de R$ 400</option>
-        </select>
-        <select id="filtroQuantidade">
-          <option value="">Todas as Quantidades</option>
-          <option value="1-5">1 a 5</option>
-          <option value="6-10">6 a 10</option>
-          <option value="11-999">Mais de 10</option>
-        </select>
-      </div>
-
-      <table id="tabelaArmacoes">
+      <table>
         <thead>
           <tr>
             <th>Modelo</th>
@@ -99,7 +86,15 @@ async function abrirDetalhesLoja(lojaId) {
           </tr>
         </thead>
         <tbody>
-          ${gerarLinhasTabela(loja)}
+          ${loja.map(item => `
+            <tr>
+              <td>${item.modelo}</td>
+              <td>${item.marca}</td>
+              <td>${item.quantidade}</td>
+              <td>${item.preco}</td>
+              <td>${item.categoria}</td>
+            </tr>
+          `).join('')}
         </tbody>
       </table>
 
@@ -115,12 +110,13 @@ async function abrirDetalhesLoja(lojaId) {
     </div>
   `;
 
-  fecharModal();
+  fecharModal(); // fecha se já tiver aberto
   document.body.insertAdjacentHTML('beforeend', modalHTML);
 
   // Listener do formulário
   document.getElementById("formCadastro").addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const novaArmacao = {
       modelo: document.getElementById("modelo").value,
       marca: document.getElementById("marca").value,
@@ -128,60 +124,10 @@ async function abrirDetalhesLoja(lojaId) {
       preco: document.getElementById("preco").value,
       categoria: document.getElementById("categoria").value,
     };
+
     await salvarNaPlanilha(lojaId, novaArmacao);
-    abrirDetalhesLoja(lojaId);
+    abrirDetalhesLoja(lojaId); // recarrega modal atualizado
   });
-
-  // Eventos dos filtros
-  ["filtroMarca", "filtroCategoria", "filtroPreco", "filtroQuantidade"].forEach(id => {
-    document.getElementById(id).addEventListener("change", () => aplicarFiltros(loja, lojaId));
-  });
-}
-
-// Gera linhas da tabela
-function gerarLinhasTabela(lista) {
-  return lista.map(item => `
-    <tr>
-      <td>${item.modelo}</td>
-      <td>${item.marca}</td>
-      <td>${item.quantidade}</td>
-      <td>${item.preco}</td>
-      <td>${item.categoria}</td>
-    </tr>
-  `).join('');
-}
-
-// Função para aplicar filtros
-function aplicarFiltros(loja, lojaId) {
-  const marca = document.getElementById("filtroMarca").value;
-  const categoria = document.getElementById("filtroCategoria").value;
-  const faixaPreco = document.getElementById("filtroPreco").value;
-  const faixaQtd = document.getElementById("filtroQuantidade").value;
-
-  const listaFiltrada = loja.filter(item => {
-    const preco = parseFloat(item.preco.replace("R$","").replace(".","").replace(",","."));
-    const qtd = parseInt(item.quantidade);
-
-    const passaMarca = !marca || item.marca === marca;
-    const passaCategoria = !categoria || item.categoria === categoria;
-
-    let passaPreco = true;
-    if (faixaPreco) {
-      const [min, max] = faixaPreco.split('-').map(Number);
-      passaPreco = preco >= min && preco <= max;
-    }
-
-    let passaQtd = true;
-    if (faixaQtd) {
-      const [min, max] = faixaQtd.split('-').map(Number);
-      passaQtd = qtd >= min && qtd <= max;
-    }
-
-    return passaMarca && passaCategoria && passaPreco && passaQtd;
-  });
-
-  const tbody = document.querySelector("#tabelaArmacoes tbody");
-  tbody.innerHTML = gerarLinhasTabela(listaFiltrada);
 }
 
 // Fechar modal
@@ -193,7 +139,8 @@ function fecharModal() {
 // Vincula os eventos aos cards de loja
 document.querySelectorAll(".card-loja").forEach((card) => {
   card.addEventListener("click", () => {
-    const lojaId = card.getAttribute("data-loja");
+    const lojaId = card.getAttribute("data-loja"); // Ex: data-loja="primitiva1"
     abrirDetalhesLoja(lojaId);
   });
 });
+ === CONFIGURAÇÃO: coloque aqui a URL da sua API do Google Apps Script ===
