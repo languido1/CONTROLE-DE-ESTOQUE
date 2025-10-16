@@ -20,9 +20,9 @@
     body { font-family: 'Montserrat', sans-serif; background-color: #f0f4f8; color: #2d3748; line-height: 1.6; }
 
     /* LOGIN */
-    #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; background-image: url('login-background.jpg'); background-size: cover; }
+    #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
     #loginForm { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1 ); text-align: center; width: 320px; }
-    #loginForm h2 { margin-bottom: 20px; color: var(--primary); font-size: 24px; }
+    #loginForm h2 { margin-bottom: 20px; color: var(--primary); }
     #loginForm input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; }
     #loginForm button { width: 100%; padding: 10px; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
     #loginForm button:hover { background: var(--primary); }
@@ -61,13 +61,15 @@
     .active-section { display: block !important; animation: fadeIn 0.3s ease; }
 
     footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px; }
+    /* Seus estilos (sem alterações) */
+    /* Inclua seu CSS aqui (igual ao seu código original) */
   </style>
 </head>
 <body>
   <!-- LOGIN -->
   <div id="login-container">
     <form id="loginForm">
-      <h2>🔒 Controle de Estoque - Óticas Diniz</h2>
+      <h2>🔒 Acesso Restrito</h2>
       <input id="usuario" type="text" placeholder="Usuário" required value="admin" />
       <input id="senha" type="password" placeholder="Senha" required value="1234"/>
       <button type="submit">Entrar</button>
@@ -101,7 +103,12 @@
             <input id="search-store" type="text" placeholder="Buscar loja..."/>
           </div>
         </div>
-        <div id="lojas-list" class="grid-container"></div>
+        <div id="lojas-list" class="grid-container">
+          <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando lojas...</p>
+          </div>
+        </div>
       </div>
 
       <div id="armacoes-container">
@@ -147,6 +154,75 @@
             </select>
           </div>
           <div id="armacoes-list" class="grid-container"></div>
+        </div>
+
+        <!-- TAB 2: CADASTRAR ARMAÇÃO -->
+        <div class="tab-content" id="tab-cadastro">
+          <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom:15px; color:#2a4365;">➕ Cadastrar Nova Armação</h3>
+            <form id="formCadastro">
+              <div class="form-group">
+                <label for="cadastro-loja">Loja *</label>
+                <input id="cadastro-loja" type="text" placeholder="Nome da Loja" required />
+              </div>
+              <div class="form-group">
+                <label for="cadastro-marca">Marca *</label>
+                <input id="cadastro-marca" type="text" placeholder="Marca da Armação" required />
+              </div>
+              <div class="form-group">
+                <label for="cadastro-modelo">Modelo *</label>
+                <input id="cadastro-modelo" type="text" placeholder="Modelo da Armação" required />
+              </div>
+              <div class="form-group">
+                <label for="cadastro-quantidade">Quantidade *</label>
+                <input id="cadastro-quantidade" type="number" placeholder="Quantidade" required />
+              </div>
+              <div class="form-group">
+                <label for="cadastro-preco">Preço</label>
+                <input id="cadastro-preco" type="text" placeholder="Ex: 190.00" />
+              </div>
+              <div class="form-group">
+                <label for="cadastro-categoria">Categoria</label>
+                <input id="cadastro-categoria" type="text" placeholder="Ex: Acetato, Metal..." />
+              </div>
+              <button type="submit" class="btn btn-primary">Cadastrar</button>
+              <p id="msgCadastro" style="margin-top:15px; font-weight:600;"></p>
+            </form>
+          </div>
+        </div>
+
+        <!-- TAB 3: ENTRADA/SAÍDA -->
+        <div class="tab-content" id="tab-entrada-saida">
+          <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom:15px; color:#2a4365;">🔄 Registrar Entrada/Saída</h3>
+            <form id="formMovimentacao">
+              <div class="form-group">
+                <label for="movimentacao-loja">Loja *</label>
+                <input id="movimentacao-loja" type="text" placeholder="Nome da Loja" required />
+              </div>
+              <div class="form-group">
+                <label for="movimentacao-marca">Marca *</label>
+                <input id="movimentacao-marca" type="text" placeholder="Marca da Armação" required />
+              </div>
+              <div class="form-group">
+                <label for="movimentacao-modelo">Modelo *</label>
+                <input id="movimentacao-modelo" type="text" placeholder="Modelo da Armação" required />
+              </div>
+              <div class="form-group">
+                <label for="movimentacao-tipo">Tipo de Movimentação *</label>
+                <select id="movimentacao-tipo">
+                  <option value="entrada">Entrada</option>
+                  <option value="saida">Saída</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="movimentacao-quantidade">Quantidade *</label>
+                <input id="movimentacao-quantidade" type="number" placeholder="Quantidade" required />
+              </div>
+              <button type="submit" class="btn btn-primary">Registrar</button>
+              <p id="msgMovimentacao" style="margin-top:15px; font-weight:600;"></p>
+            </form>
+          </div>
         </div>
       </div>
     </main>
