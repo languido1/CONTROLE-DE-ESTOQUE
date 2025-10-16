@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbwW6bmmp0hqXeOlVhKUsR4IOmk0rrDQy-mO2fiMeM_w4zz-6skFa1-YZ7OFhfep_EWa/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxCB8p6fKhdp-zWxVgnPmev4Nef53lzbi0xL4T4IBwN9Di_MeAQmnimZ7NXeOpCTC6Y/exec";
 let dadosLojas = {};
 let usuarioLogado = null;
 
@@ -110,4 +110,5 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("loginForm").addEventListener("submit", processarLogin);
   document.getElementById("search-store").addEventListener("input", filtrarLojas);
 });
+
 
