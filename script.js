@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbw66jjlRRG7RuzOqApSiMOVY270KOMQ_og0bKTVJrMAi46JvIgkcUaQs1GXsfaHs8Pv/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbw66jjlRRG7RuzOqApSiMOVY270KOMQ_og0bKTVJrMAi46JvIgkcUaQs1GXsfaHs8Pv/exec";
 let dadosLojas = {};
 let lojaAtual = null;
 let usuarioLogado = null;
@@ -110,7 +110,6 @@ function filtrarLojas() {
 
 // 🛠️ ABRIR DETALHES DA LOJA
 function abrirDetalhesLoja(lojaId) {
-  console.log("Clicou no card da loja:", lojaId); // Verifica se o evento de clique está funcionando corretamente
   lojaAtual = lojaId.toUpperCase().trim();
   document.getElementById("lojas-container").classList.remove("active-section");
   document.getElementById("armacoes-container").classList.add("active-section");
@@ -122,8 +121,6 @@ function abrirDetalhesLoja(lojaId) {
 
 // 🏷️ CARREGAR ARMAÇÕES DA LOJA
 function carregarArmacoes(lojaId) {
-  console.log("Carregando armações para a loja:", lojaId); // Verifica se a função está sendo chamada corretamente
-
   const armacoesList = document.getElementById("armacoes-list");
   const armacoes = dadosLojas[lojaId] || [];
 
@@ -150,8 +147,6 @@ function aplicarFiltros() {
   const priceFilter = document.getElementById("filter-price").value;
   const quantityFilter = document.getElementById("filter-quantity").value;
 
-  console.log("Aplicando filtros..."); // Verificar se a função de filtro está sendo chamada corretamente
-
   let armacoes = dadosLojas[lojaAtual] || [];
 
   if (brandFilter) {
@@ -175,7 +170,6 @@ function aplicarFiltros() {
     armacoes = armacoes.filter(a => a.quantidade >= minQ && a.quantidade <= maxQ);
   }
 
-  // Atualiza a exibição das armações
   carregarArmacoes(lojaAtual, armacoes);
 }
 
@@ -198,4 +192,8 @@ function mudarTab(tabName) {
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("loginForm").addEventListener("submit", processarLogin);
   document.getElementById("search-store").addEventListener("input", filtrarLojas);
+  document.getElementById("back-to-stores").addEventListener("click", function() {
+    document.getElementById("armacoes-container").classList.remove("active-section");
+    document.getElementById("lojas-container").classList.add("active-section");
+  });
 });
