@@ -1,5 +1,6 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbw66jjlRRG7RuzOqApSiMOVY270KOMQ_og0bKTVJrMAi46JvIgkcUaQs1GXsfaHs8Pv/exec";
 let dadosLojas = {};
+let lojaAtual = null;
 let usuarioLogado = null;
 
 // 🔒 LOGIN
@@ -20,27 +21,16 @@ function processarLogin(event) {
   }
 }
 
-function fazerLogout() {
-  usuarioLogado = null;
-  document.getElementById("dashboard").style.display = "none";
-  document.getElementById("login-container").style.display = "flex";
-  document.getElementById("usuario").value = "";
-  document.getElementById("senha").value = "";
-}
-
-// 🔗 CARREGAR DADOS DA PLANILHA VIA GOOGLE APPS SCRIPT (com proxy para evitar CORS)
+// 🔗 CARREGAR DADOS
 async function carregarDados() {
   try {
-    const proxyURL = `https://corsproxy.io/?${encodeURIComponent(API_URL)}`;
-    const resposta = await fetch(proxyURL);
+    const resposta = await fetch(API_URL);
     if (!resposta.ok) throw new Error("Erro ao acessar a planilha.");
 
     const dados = await resposta.json();
-    console.log("✅ Dados recebidos:", dados);
 
     dadosLojas = {};
 
-    // Espera que a estrutura do App Script seja { lojas: [ { Loja, Marca, Modelo, Quantidade, Preço, Categoria } ] }
     dados.lojas.forEach(item => {
       const loja = (item.Loja || "SEM NOME").toUpperCase().trim();
       if (!dadosLojas[loja]) dadosLojas[loja] = [];
@@ -56,7 +46,7 @@ async function carregarDados() {
     carregarLojas();
   } catch (erro) {
     console.error("❌ Erro ao carregar dados:", erro);
-    alert("Erro ao carregar dados da planilha. Verifique se o link do Apps Script está publicado como 'Qualquer pessoa com o link'.");
+    alert("Erro ao carregar dados da planilha.");
   }
 }
 
@@ -75,7 +65,7 @@ function carregarLojas() {
     const totalQuantidade = dadosLojas[loja].reduce((sum, item) => sum + item.quantidade, 0);
 
     return `
-      <div class="store-card">
+      <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
         <h3>${loja}</h3>
         <p><strong>${totalArmacoes}</strong> modelos de armações</p>
         <p><strong>${totalQuantidade}</strong> unidades no total</p>
@@ -99,7 +89,7 @@ function filtrarLojas() {
   }
 
   lojasList.innerHTML = lojasFiltradas.map(loja => `
-    <div class="store-card">
+    <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
       <h3>${loja}</h3>
       <p><strong>${dadosLojas[loja].length}</strong> modelos</p>
     </div>
@@ -107,14 +97,7 @@ function filtrarLojas() {
 }
 
 // 🎯 EVENTOS
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("loginForm").addEventListener("submit", processarLogin);
   document.getElementById("search-store").addEventListener("input", filtrarLojas);
 });
-
-
-
-
-
-
-
