@@ -5,114 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Controle de Estoque | Óticas Diniz</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet"/>
   <style>
-  :root {
+    :root {
       --primary: #2a4365;
       --secondary: #4299e1;
-      --light: #ebf8ff;
-      --dark: #1a365d;
+      --light: #f7fafc;
       --danger: #e53e3e;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Montserrat', sans-serif; background-color: #f0f4f8; color: #2d3748; }
 
     /* LOGIN */
-    #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-    #loginForm { background: white; padding: 35px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; width: 350px; }
-    #loginForm h2 { margin-bottom: 25px; color: var(--primary); font-weight: 700; }
+    #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--light); }
+    #loginForm { background: white; padding: 40px 30px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); width: 340px; text-align: center; }
+    #loginForm h2 { color: var(--primary); margin-bottom: 25px; font-weight: 700; }
     #loginForm input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; }
     #loginForm button { width: 100%; padding: 12px; background: var(--secondary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-top: 10px; }
     #loginForm button:hover { background: var(--primary); }
-    .error-msg { color: red; font-size: 14px; margin-top: 10px; min-height: 18px; }
+    .error-msg { color: var(--danger); font-size: 14px; min-height: 18px; margin-top: 5px; }
 
     /* DASHBOARD */
     .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
-    .logo h1 { font-size: 24px; font-weight: 700; }
-    .logo h1 span { color: var(--secondary); font-weight: 600; }
-
-    .user-menu { position: relative; display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 12px; border-radius: 6px; }
-    .user-dropdown { position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 150px; display: none; z-index: 1000; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #e2e8f0; }
+    .logo h1 { font-size: 22px; font-weight: 700; color: var(--primary); }
+    .logo span { color: var(--secondary); }
+    .user-menu { display: flex; align-items: center; gap: 10px; position: relative; cursor: pointer; }
+    .user-menu i { font-size: 22px; color: var(--primary); }
+    .user-dropdown { position: absolute; top: 40px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; }
     .user-dropdown.show { display: block; }
-    .user-dropdown button { width: 100%; padding: 10px 15px; background: none; border: none; text-align: left; cursor: pointer; color: var(--dark); }
-    .user-dropdown button.logout { color: var(--danger); border-top: 1px solid #e2e8f0; }
+    .user-dropdown button { background: none; border: none; width: 100%; padding: 10px 15px; text-align: left; font-size: 14px; cursor: pointer; color: var(--danger); }
+    .user-dropdown button:hover { background: #fed7d7; }
 
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-    .section-header h2 { font-size: 20px; color: var(--primary); }
-    .section-header h2 i { margin-right: 10px; color: var(--secondary); }
-
-    .search-box { position: relative; width: 260px; }
-    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; }
-    .search-box input { width: 100%; padding: 10px 15px 10px 35px; border: 1px solid #e2e8f0; border-radius: 6px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin: 25px 0 20px; flex-wrap: wrap; gap: 15px; }
+    .section-header h2 { color: var(--primary); font-size: 20px; display: flex; align-items: center; gap: 10px; }
+    .search-box { position: relative; width: 250px; }
+    .search-box input { width: 100%; padding: 10px 15px 10px 35px; border-radius: 6px; border: 1px solid #ccc; }
+    .search-box i { position: absolute; top: 50%; left: 10px; transform: translateY(-50%); color: #aaa; }
 
     .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-
-    .store-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: all 0.3s ease; cursor: pointer; text-align: center; }
+    .store-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; }
     .store-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
-    .store-card h3 { font-size: 18px; margin-bottom: 8px; color: var(--primary); }
-    .store-card p { color: #718096; font-size: 14px; }
+    .store-card h3 { font-size: 18px; color: var(--primary); margin-bottom: 5px; }
+    .store-card p { font-size: 14px; color: #666; }
 
     /* ARMAÇÕES */
     #armacoes-container { display: none; }
-    .filters {
-      background: #fff;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 25px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-    .filters select, .filters input {
-      flex: 1;
-      min-width: 180px;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background: #f9fafb;
-      font-size: 14px;
-    }
-
-    .frame-card {
-      background: white;
-      border-radius: 10px;
-      padding: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      transition: 0.2s;
-      text-align: center;
-    }
+    .filters { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+    .filters select, .filters input { flex: 1; min-width: 180px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #f9fafb; font-size: 14px; }
+    .frame-card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; padding: 10px; transition: 0.2s; }
     .frame-card:hover { transform: scale(1.03); }
+    .frame-card img { width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; }
+    .frame-card h4 { color: var(--primary); font-size: 16px; margin: 5px 0; }
+    .frame-card p { font-size: 13px; color: #555; margin: 2px 0; }
+    .btn-back { background: var(--secondary); color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
-    .frame-card img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
-    .frame-card h4 {
-      color: var(--primary);
-      margin: 5px 0;
-      font-size: 16px;
-    }
-    .frame-card p { margin: 3px 0; font-size: 14px; color: #555; }
-
-    .btn-back {
-      background: var(--secondary);
-      border: none;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px; }
+    footer { text-align: center; padding: 20px; border-top: 1px solid #e2e8f0; margin-top: 30px; color: #718096; font-size: 14px; }
 
     @media (max-width: 768px) {
       .filters { flex-direction: column; }
+      .search-box { width: 100%; }
     }
   </style>
 </head>
@@ -122,8 +74,8 @@
   <div id="login-container">
     <form id="loginForm">
       <h2>Controle de Estoque<br>Óticas Diniz</h2>
-      <input id="usuario" type="text" placeholder="Usuário" required value="admin"/>
-      <input id="senha" type="password" placeholder="Senha" required value="1234"/>
+      <input id="usuario" type="text" placeholder="Usuário" required value="admin" />
+      <input id="senha" type="password" placeholder="Senha" required value="1234" />
       <button type="submit">Entrar</button>
       <p id="errorMsg" class="error-msg"></p>
     </form>
@@ -135,17 +87,18 @@
       <div class="logo">
         <h1>Controle de <span>Estoque</span></h1>
       </div>
-      <div class="user-menu" id="user-menu">
-        <span class="username">Admin</span>
+      <div class="user-menu" id="userMenu">
         <i class="fas fa-user-circle"></i>
-        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
-        <div class="user-dropdown" id="user-dropdown">
-          <button class="logout" onclick="fazerLogout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+        <span class="username">Admin</span>
+        <i class="fas fa-chevron-down" style="font-size:12px;"></i>
+        <div class="user-dropdown" id="userDropdown">
+          <button onclick="fazerLogout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
         </div>
       </div>
     </header>
 
     <main>
+      <!-- LISTA DE LOJAS -->
       <div id="lojas-container" class="active-section">
         <div class="section-header">
           <h2><i class="fas fa-store"></i> Lojas</h2>
@@ -164,15 +117,10 @@
           <button id="back-to-stores" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
         </div>
 
-        <!-- FILTROS -->
         <div class="filters">
-          <input type="text" id="search-frame" placeholder="🔍 Buscar armação...">
-          <select id="filter-brand">
-            <option value="">Todas as Marcas</option>
-          </select>
-          <select id="filter-category">
-            <option value="">Todas as Categorias</option>
-          </select>
+          <input id="search-frame" type="text" placeholder="🔍 Buscar armação...">
+          <select id="filter-brand"><option value="">Todas as Marcas</option></select>
+          <select id="filter-category"><option value="">Todas as Categorias</option></select>
           <select id="filter-price">
             <option value="">Faixa de preço</option>
             <option value="0-100">Até R$100</option>
@@ -187,18 +135,7 @@
           </select>
         </div>
 
-        <div id="armacoes-list" class="grid-container">
-          <!-- Exemplo de armações com imagem -->
-          <div class="frame-card">
-            <img src="https://cdn.pixabay.com/photo/2016/03/27/19/45/glasses-1284294_1280.jpg" alt="Armação exemplo">
-            <h4>ACTIVE 101</h4>
-            <p><strong>Marca:</strong> Active</p>
-            <p><strong>Modelo:</strong> 101</p>
-            <p><strong>Categoria:</strong> Acetato</p>
-            <p><strong>Quantidade:</strong> 8</p>
-            <p><strong>Preço:</strong> R$ 290,00</p>
-          </div>
-        </div>
+        <div id="armacoes-list" class="grid-container"></div>
       </div>
     </main>
 
@@ -208,5 +145,13 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    // Mostrar/esconder menu do usuário
+    const userMenu = document.getElementById("userMenu");
+    const userDropdown = document.getElementById("userDropdown");
+    userMenu.addEventListener("click", () => {
+      userDropdown.classList.toggle("show");
+    });
+  </script>
 </body>
 </html>
