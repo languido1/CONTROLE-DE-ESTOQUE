@@ -28,14 +28,15 @@ function fazerLogout() {
   document.getElementById("senha").value = "";
 }
 
-// 🔗 CARREGAR DADOS DA PLANILHA VIA GOOGLE APPS SCRIPT
+// 🔗 CARREGAR DADOS DA PLANILHA VIA GOOGLE APPS SCRIPT (com proxy para evitar CORS)
 async function carregarDados() {
   try {
-    const resposta = await fetch(API_URL);
+    const proxyURL = `https://corsproxy.io/?${encodeURIComponent(API_URL)}`;
+    const resposta = await fetch(proxyURL);
     if (!resposta.ok) throw new Error("Erro ao acessar a planilha.");
 
     const dados = await resposta.json();
-    console.log("Dados recebidos:", dados);
+    console.log("✅ Dados recebidos:", dados);
 
     dadosLojas = {};
 
@@ -54,8 +55,8 @@ async function carregarDados() {
 
     carregarLojas();
   } catch (erro) {
-    console.error("Erro ao carregar dados:", erro);
-    alert("Erro ao carregar dados da planilha.");
+    console.error("❌ Erro ao carregar dados:", erro);
+    alert("Erro ao carregar dados da planilha. Verifique se o link do Apps Script está publicado como 'Qualquer pessoa com o link'.");
   }
 }
 
@@ -110,5 +111,3 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("loginForm").addEventListener("submit", processarLogin);
   document.getElementById("search-store").addEventListener("input", filtrarLojas);
 });
-
-
