@@ -8,14 +8,15 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
   <style>
     :root {
-        --primary: #2a4365;
-        --secondary: #4299e1;
-        --light: #ebf8ff;
-        --dark: #1a365d;
-        --success: #48bb78;
-        --warning: #ed8936;
-        --danger: #e53e3e;
+      --primary: #2a4365;
+      --secondary: #4299e1;
+      --light: #ebf8ff;
+      --dark: #1a365d;
+      --success: #48bb78;
+      --warning: #ed8936;
+      --danger: #e53e3e;
     }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Montserrat', sans-serif; background-color: #f0f4f8; color: #2d3748; line-height: 1.6; }
 
@@ -34,6 +35,7 @@
     .logo { display: flex; align-items: center; gap: 15px; }
     .logo h1 { font-size: 24px; font-weight: 700; }
     .logo h1 span { color: var(--secondary); font-weight: 600; }
+
     .user-menu { position: relative; display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 12px; border-radius: 6px; }
     .user-menu:hover { background: var(--light); }
     .user-dropdown { position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 150px; display: none; z-index: 1000; }
@@ -57,12 +59,24 @@
     .store-card h3 { font-size: 18px; margin-bottom: 10px; color: var(--primary); }
     .store-card p { color: #718096; font-size: 14px; }
 
+    .frame-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); position: relative; }
+    .frame-card h4 { font-size: 16px; margin-bottom: 5px; color: var(--primary); }
+    .frame-card p { font-size: 14px; color: #718096; margin-bottom: 5px; }
+    .frame-card .frame-price { font-weight: 600; color: var(--dark); }
+    .frame-card .frame-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 5px; }
+    .frame-card .btn-remove { background: var(--danger); color: white; border: none; border-radius: 4px; width: 25px; height: 25px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .frame-card .btn-remove:hover { background: #c53030; }
+
     #armacoes-container { display: none; }
     .active-section { display: block !important; animation: fadeIn 0.3s ease; }
 
     footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px; }
-    /* Seus estilos (sem alterações) */
-    /* Inclua seu CSS aqui (igual ao seu código original) */
+
+    /* Filtros de exibição */
+    .filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 15px 0; }
+    .filters select { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; background: white; cursor: pointer; }
+    .filters select:hover { border-color: var(--secondary); }
+
   </style>
 </head>
 <body>
@@ -132,6 +146,7 @@
 
         <!-- TAB 1: LISTA DE ARMAÇÕES -->
         <div class="tab-content active" id="tab-lista">
+          <!-- FILTROS -->
           <div class="filters">
             <select id="filter-brand">
               <option value="">Todas as Marcas</option>
