@@ -268,451 +268,437 @@
       Sistema de Controle de Estoque v1.0
     </footer>
   </div>
+<script>
+  let dadosLojas = {}; // Estrutura principal que contém as lojas e armações
+  let lojaAtual = null;
 
-  <script>
-    let dadosLojas = {};
-    let lojaAtual = null;
-    let usuarioLogado = null;
+  // --- Função para salvar localmente (exemplo usando localStorage) ---
+  function salvarLocal() {
+    localStorage.setItem('dadosLojas', JSON.stringify(dadosLojas));
+  }
 
-    // ========== FUNÇÕES DE LOGIN ==========
-    function processarLogin(event) {
-      event.preventDefault();
-      const usuario = document.getElementById("usuario").value;
-      const senha = document.getElementById("senha").value;
-      const errorMsg = document.getElementById("errorMsg");
-
-      if (usuario === "admin" && senha === "1234") {
-        usuarioLogado = usuario;
-        document.getElementById("login-container").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        document.querySelector(".username").textContent = usuario;
-        carregarDados();
-        errorMsg.textContent = "";
-      } else {
-        errorMsg.textContent = "Usuário ou senha incorretos!";
-      }
+  // --- Função para carregar dados do localStorage ---
+  function carregarLocal() {
+    const dados = localStorage.getItem('dadosLojas');
+    if (dados) {
+      dadosLojas = JSON.parse(dados);
     }
+  }
 
-    function fazerLogout() {
-      usuarioLogado = null;
-      document.getElementById("dashboard").style.display = "none";
-      document.getElementById("login-container").style.display = "flex";
-      document.getElementById("usuario").value = "";
-      document.getElementById("senha").value = "";
-      document.getElementById("user-dropdown").classList.remove("show");
-    }
+  // --- Função para carregar dados da planilha Google Sheets (exemplo básico) ---
+  async function carregarDadosPlanilha() {
+    // Você deve publicar sua planilha como CSV ou JSON ou usar API Google Sheets com token
+    // Aqui um exemplo simplificado usando fetch de uma URL pública CSV convertido para JSON
+    try {
+      // Exemplo de URL de planilha publicada como CSV
+      const urlCSV = 'URL_DA_PLANILHA_PUBLICADA_CSV';
 
-    // ========== FUNÇÕES DE DADOS ==========
-    function salvarLocal() {
-      localStorage.setItem("dadosLojas", JSON.stringify(dadosLojas));
-    }
+      const response = await fetch(urlCSV);
+      const csvText = await response.text();
+      // Converter CSV para JSON (exemplo simples, sugiro usar bibliotecas para produção)
+      const linhas = csvText.trim().split('\n');
+      const cabecalho = linhas.shift().split(',');
 
-    async function carregarDados() {
-      const dadosSalvos = localStorage.getItem("dadosLojas");
-      if (dadosSalvos) {
-        const dadosAntigos = JSON.parse(dadosSalvos);
-        dadosLojas = {}; // Limpa para reconstruir
-        for (const lojaAntiga in dadosAntigos) {
-          const lojaNormalizada = lojaAntiga.toUpperCase().trim();
-          if (dadosLojas[lojaNormalizada]) {
-            // Se a loja já existe (devido a chaves com capitalização diferente), mescla as armações
-            dadosLojas[lojaNormalizada].push(...dadosAntigos[lojaAntiga]);
-          } else {
-            dadosLojas[lojaNormalizada] = dadosAntigos[lojaAntiga];
-          }
-        }
-        salvarLocal(); // Salva os dados normalizados de volta no localStorage
-      }
+      dadosLojas = {}; // Resetar dados
+
+      linhas.forEach(linha => {
+        const valores = linha.split(',');
+
+        // Ajuste conforme o formato da sua planilha
+        const loja = valores[0].toUpperCase().trim();
+        const marca = valores[1].trim();
+        const modelo = valores[2].trim();
+        const quantidade = parseInt(valores[3]);
+        const preco = valores[4].trim();
+        const categoria = valores[5].trim();
+
+        if (!dadosLojas[loja]) dadosLojas[loja] = [];
+
+        dadosLojas[loja].push({
+          marca,
+          modelo,
+          quantidade,
+          preco: preco ? `R$ ${preco}` : 'R$ 0,00',
+          categoria: categoria || 'Geral'
+        });
+      });
+
+      salvarLocal();
       carregarLojas();
+    } catch (error) {
+      console.error("Erro ao carregar dados da planilha:", error);
+    }
+  }
+
+  // --- Função para abrir detalhes da loja ---
+  function abrirDetalhesLoja(lojaId) {
+    lojaAtual = lojaId.toUpperCase().trim();
+    document.getElementById("lojas-container").classList.remove("active-section");
+    document.getElementById("armacoes-container").classList.add("active-section");
+    document.getElementById("current-store-name").textContent = lojaId;
+    carregarArmacoes(lojaAtual);
+    carregarFiltros(lojaAtual);
+    mudarTab("lista");
+  }
+
+  // --- Carregar armações da loja ---
+  function carregarArmacoes(lojaId) {
+    const armacoesList = document.getElementById("armacoes-list");
+    const armacoes = dadosLojas[lojaId] || [];
+
+    if (armacoes.length === 0) {
+      armacoesList.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">
+        Nenhuma armação cadastrada nesta loja</p>`;
+      return;
     }
 
-    // ========== FUNÇÕES DA INTERFACE ==========
-    function carregarLojas() {
-      const lojasList = document.getElementById("lojas-list");
-      const lojas = Object.keys(dadosLojas);
+    armacoesList.innerHTML = armacoes.map(armacao => `
+      <div class="frame-card">
+        <div class="frame-actions">
+          <button class="btn-remove" onclick="removerArmacao('${armacao.marca}', '${armacao.modelo}')" title="Remover armação">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <h4>${armacao.modelo}</h4>
+        <p><strong>Marca:</strong> ${armacao.marca}</p>
+        <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
+        <p><strong>Preço:</strong> ${armacao.preco}</p>
+        <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+      </div>
+    `).join('');
+  }
 
-      if (lojas.length === 0) {
-        lojasList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma loja cadastrada</p>";
-        return;
-      }
-
-      lojasList.innerHTML = lojas.map(loja => {
-        const totalArmacoes = dadosLojas[loja].length;
-        const totalQuantidade = dadosLojas[loja].reduce((sum, item) => sum + item.quantidade, 0);
-
-        return `
-          <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
-            <h3>${loja}</h3>
-            <p><strong>${totalArmacoes}</strong> modelos de armações</p>
-            <p><strong>${totalQuantidade}</strong> unidades no total</p>
-            <p><small>Clique para gerenciar</small></p>
-          </div>
-        `;
-      }).join('');
+  // --- Remover armação ---
+  function removerArmacao(marca, modelo) {
+    if (!lojaAtual || !confirm(`Tem certeza que deseja remover ${marca} ${modelo}?`)) {
+      return;
     }
 
-    function abrirDetalhesLoja(lojaId) {
-      lojaAtual = lojaId.toUpperCase().trim();
-      document.getElementById("lojas-container").classList.remove("active-section");
-      document.getElementById("armacoes-container").classList.add("active-section");
-      document.getElementById("current-store-name").textContent = lojaId;
+    const loja = dadosLojas[lojaAtual];
+    const index = loja.findIndex(a => a.marca === marca && a.modelo === modelo);
+
+    if (index !== -1) {
+      loja.splice(index, 1);
+      salvarLocal();
+      carregarArmacoes(lojaAtual);
+      carregarLojas(); // Atualiza o card da loja
+    }
+  }
+
+  // --- Cadastrar armação com validação ---
+  async function cadastrarArmacao(event) {
+    event.preventDefault();
+
+    const lojaInput = document.getElementById("cadastro-loja").value;
+    const loja = lojaInput.toUpperCase().trim();
+    const marca = document.getElementById("cadastro-marca").value.trim();
+    const modelo = document.getElementById("cadastro-modelo").value.trim();
+    const quantidadeStr = document.getElementById("cadastro-quantidade").value.trim();
+    const precoInput = document.getElementById("cadastro-preco").value.trim();
+    const categoria = document.getElementById("cadastro-categoria").value.trim() || "Geral";
+    const msgCadastro = document.getElementById("msgCadastro");
+
+    // Validações básicas
+    if (!loja) {
+      mostrarMensagem(msgCadastro, "Erro: O nome da loja é obrigatório.", "red");
+      return;
+    }
+    if (!marca) {
+      mostrarMensagem(msgCadastro, "Erro: A marca é obrigatória.", "red");
+      return;
+    }
+    if (!modelo) {
+      mostrarMensagem(msgCadastro, "Erro: O modelo é obrigatório.", "red");
+      return;
+    }
+    const quantidade = parseInt(quantidadeStr);
+    if (isNaN(quantidade) || quantidade <= 0) {
+      mostrarMensagem(msgCadastro, "Erro: A quantidade deve ser um número positivo.", "red");
+      return;
+    }
+
+    // Formata preço para padrão "R$ XX,XX"
+    let preco = precoInput;
+    if (!preco) {
+      preco = "0,00";
+    } else {
+      preco = preco.replace(/[^\d,]/g, ""); // Permite apenas dígitos e vírgula
+      if (!preco.includes(",")) preco += ",00";
+    }
+
+    // Garante que a loja existe na estrutura de dados
+    if (!dadosLojas[loja]) {
+      dadosLojas[loja] = [];
+    }
+
+    // Verifica se já existe esta armação na loja
+    const armacaoExistente = dadosLojas[loja].find(a => a.marca === marca && a.modelo === modelo);
+
+    if (armacaoExistente) {
+      mostrarMensagem(msgCadastro, "Erro: Esta armação já existe na loja. Use a opção 'Entrada/Saída' para adicionar mais unidades.", "red");
+      return;
+    }
+
+    const novaArmacao = {
+      marca: marca,
+      modelo: modelo,
+      quantidade: quantidade,
+      preco: `R$ ${preco}`,
+      categoria: categoria
+    };
+
+    // Adiciona localmente
+    dadosLojas[loja].push(novaArmacao);
+    salvarLocal();
+
+    mostrarMensagem(msgCadastro, `Armação cadastrada com sucesso na loja ${loja}!`, "green");
+
+    // Atualiza visualizações e filtros
+    carregarLojas();
+    if (lojaAtual === loja) {
       carregarArmacoes(lojaAtual);
       carregarFiltros(lojaAtual);
-      mudarTab("lista");
     }
 
-    function carregarArmacoes(lojaId) {
-      const armacoesList = document.getElementById("armacoes-list");
-      const armacoes = dadosLojas[lojaId] || [];
+    // Limpa o formulário
+    document.getElementById("formCadastro").reset();
+  }
 
-      if (armacoes.length === 0) {
-        armacoesList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma armação cadastrada nesta loja</p>";
-        return;
-      }
+  // --- Função para mostrar mensagens com timeout ---
+  function mostrarMensagem(elemento, texto, cor, duracao = 4000) {
+    elemento.textContent = texto;
+    elemento.style.color = cor;
+    setTimeout(() => {
+      elemento.textContent = "";
+    }, duracao);
+  }
 
-      armacoesList.innerHTML = armacoes.map(armacao => `
-        <div class="frame-card">
-          <div class="frame-actions">
-            <button class="btn-remove" onclick="removerArmacao('${armacao.marca}', '${armacao.modelo}')" title="Remover armação">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <h4>${armacao.modelo}</h4>
-          <p><strong>Marca:</strong> ${armacao.marca}</p>
-          <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
-          <p><strong>Preço:</strong> ${armacao.preco}</p>
-          <p><strong>Categoria:</strong> ${armacao.categoria}</p>
-        </div>
-      `).join('');
+  // --- Registrar movimentação de estoque ---
+  async function registrarMovimentacao(event) {
+    event.preventDefault();
+
+    const lojaInput = document.getElementById("movimentacao-loja").value;
+    const loja = lojaInput.toUpperCase().trim();
+    const marca = document.getElementById("movimentacao-marca").value.trim();
+    const modelo = document.getElementById("movimentacao-modelo").value.trim();
+    const tipo = document.getElementById("movimentacao-tipo").value;
+    const quantidadeStr = document.getElementById("movimentacao-quantidade").value.trim();
+    const msgMovimentacao = document.getElementById("msgMovimentacao");
+
+    if (!loja) {
+      mostrarMensagem(msgMovimentacao, "Erro: O nome da loja é obrigatório.", "red");
+      return;
     }
 
-    function removerArmacao(marca, modelo) {
-      if (!lojaAtual || !confirm(`Tem certeza que deseja remover ${marca} ${modelo}?`)) {
-        return;
-      }
-
-      const loja = dadosLojas[lojaAtual];
-      const index = loja.findIndex(a => a.marca === marca && a.modelo === modelo);
-
-      if (index !== -1) {
-        loja.splice(index, 1);
-        salvarLocal();
-        carregarArmacoes(lojaAtual);
-        carregarLojas(); // Atualiza o card da loja
-      }
+    if (!dadosLojas[loja]) {
+      mostrarMensagem(msgMovimentacao, "Erro: Loja não encontrada", "red");
+      return;
     }
 
-    // ========== FUNÇÕES DE CADASTRO ==========
-    async function cadastrarArmacao(event) {
-      event.preventDefault();
+    const armacao = dadosLojas[loja].find(a => a.marca === marca && a.modelo === modelo);
 
-      const lojaInput = document.getElementById("cadastro-loja").value;
-      const loja = lojaInput.toUpperCase().trim();
-      const marca = document.getElementById("cadastro-marca").value;
-      const modelo = document.getElementById("cadastro-modelo").value;
-      const quantidade = parseInt(document.getElementById("cadastro-quantidade").value);
-      const preco = document.getElementById("cadastro-preco").value;
-      const categoria = document.getElementById("cadastro-categoria").value;
-      const msgCadastro = document.getElementById("msgCadastro");
-
-      if (!loja) {
-        msgCadastro.textContent = "Erro: O nome da loja é obrigatório.";
-        msgCadastro.style.color = "red";
-        return;
-      }
-
-      // Garante que a loja existe na estrutura de dados
-      if (!dadosLojas[loja]) {
-        dadosLojas[loja] = [];
-      }
-
-      // Verifica se já existe esta armação na loja
-      const armacaoExistente = dadosLojas[loja].find(a => a.marca === marca && a.modelo === modelo);
-
-      if (armacaoExistente) {
-        msgCadastro.textContent = "Erro: Esta armação já existe na loja. Use a opção 'Entrada/Saída' para adicionar mais unidades.";
-        msgCadastro.style.color = "red";
-        return;
-      }
-
-      const novaArmacao = {
-        marca: marca,
-        modelo: modelo,
-        quantidade: quantidade,
-        preco: preco ? `R$ ${preco}` : "R$ 0,00",
-        categoria: categoria || "Geral"
-      };
-
-      // Adiciona localmente
-      dadosLojas[loja].push(novaArmacao);
-      salvarLocal();
-
-      msgCadastro.textContent = `Armação cadastrada com sucesso na loja ${loja}!`;
-      msgCadastro.style.color = "green";
-
-      // Atualiza a visualização das lojas
-      carregarLojas();
-
-      // Limpa o formulário
-      document.getElementById("formCadastro").reset();
+    if (!armacao) {
+      mostrarMensagem(msgMovimentacao, "Erro: Armação não encontrada nesta loja", "red");
+      return;
     }
 
-    // ========== FUNÇÕES DE MOVIMENTAÇÃO ==========
-    async function registrarMovimentacao(event) {
-      event.preventDefault();
-
-      const lojaInput = document.getElementById("movimentacao-loja").value;
-      const loja = lojaInput.toUpperCase().trim();
-      const marca = document.getElementById("movimentacao-marca").value;
-      const modelo = document.getElementById("movimentacao-modelo").value;
-      const tipo = document.getElementById("movimentacao-tipo").value;
-      const quantidade = parseInt(document.getElementById("movimentacao-quantidade").value);
-      const msgMovimentacao = document.getElementById("msgMovimentacao");
-
-      if (!loja) {
-        msgMovimentacao.textContent = "Erro: O nome da loja é obrigatório.";
-        msgMovimentacao.style.color = "red";
-        return;
-      }
-
-      if (!dadosLojas[loja]) {
-        msgMovimentacao.textContent = "Erro: Loja não encontrada";
-        msgMovimentacao.style.color = "red";
-        return;
-      }
-
-      const armacao = dadosLojas[loja].find(a => a.marca === marca && a.modelo === modelo);
-
-      if (!armacao) {
-        msgMovimentacao.textContent = "Erro: Armação não encontrada nesta loja";
-        msgMovimentacao.style.color = "red";
-        return;
-      }
-
-      if (tipo === "entrada") {
-        armacao.quantidade += quantidade;
-        msgMovimentacao.textContent = `+${quantidade} unidades adicionadas ao estoque da loja ${loja}!`;
-        msgMovimentacao.style.color = "green";
-      } else {
-        if (armacao.quantidade < quantidade) {
-          msgMovimentacao.textContent = "Erro: Quantidade insuficiente em estoque";
-          msgMovimentacao.style.color = "red";
-          return;
-        }
-        armacao.quantidade -= quantidade;
-        msgMovimentacao.textContent = `-${quantidade} unidades removidas do estoque da loja ${loja}!`;
-        msgMovimentacao.style.color = "orange";
-      }
-
-      salvarLocal();
-
-      // Se estiver visualizando a loja afetada, atualiza a visualização
-      if (lojaAtual === loja) {
-        carregarArmacoes(lojaAtual);
-      }
-
-      // Sempre atualiza a lista de lojas
-      carregarLojas();
-
-      // Limpa o formulário
-      document.getElementById("formMovimentacao").reset();
+    const quantidade = parseInt(quantidadeStr);
+    if (isNaN(quantidade) || quantidade <= 0) {
+      mostrarMensagem(msgMovimentacao, "Erro: Quantidade inválida", "red");
+      return;
     }
 
-    // ========== FUNÇÕES AUXILIARES ==========
-    function carregarFiltros(lojaId) {
-      const armacoes = dadosLojas[lojaId] || [];
-      const marcas = [...new Set(armacoes.map(a => a.marca))];
-      const categorias = [...new Set(armacoes.map(a => a.categoria))];
-
-      const filterBrand = document.getElementById("filter-brand");
-      const filterCategory = document.getElementById("filter-category");
-
-      filterBrand.innerHTML = "<option value=\"\">Todas as Marcas</option>";
-      filterCategory.innerHTML = "<option value=\"\">Todas as Categorias</option>";
-
-      marcas.forEach(marca => {
-        if (marca && marca !== "Sem marca") {
-          filterBrand.innerHTML += `<option value="${marca}">${marca}</option>`;
-        }
-      });
-
-      categorias.forEach(categoria => {
-        if (categoria && categoria !== "Geral") {
-          filterCategory.innerHTML += `<option value="${categoria}">${categoria}</option>`;
-        }
-      });
-    }
-
-    function filtrarLojas() {
-      const termo = document.getElementById("search-store").value.toLowerCase();
-      const lojas = Object.keys(dadosLojas);
-      const lojasFiltradas = lojas.filter(loja =>
-        loja.toLowerCase().includes(termo)
-      );
-
-      const lojasList = document.getElementById("lojas-list");
-
-      if (lojasFiltradas.length === 0) {
-        lojasList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma loja encontrada</p>";
+    if (tipo === "entrada") {
+      armacao.quantidade += quantidade;
+      mostrarMensagem(msgMovimentacao, `+${quantidade} unidades adicionadas ao estoque da loja ${loja}!`, "green");
+    } else {
+      if (armacao.quantidade < quantidade) {
+        mostrarMensagem(msgMovimentacao, "Erro: Quantidade insuficiente em estoque", "red");
         return;
       }
-
-      lojasList.innerHTML = lojasFiltradas.map(loja => {
-        const totalArmacoes = dadosLojas[loja].length;
-        const totalQuantidade = dadosLojas[loja].reduce((sum, item) => sum + item.quantidade, 0);
-
-        return `
-          <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
-            <h3>${loja}</h3>
-            <p><strong>${totalArmacoes}</strong> modelos de armações</p>
-            <p><strong>${totalQuantidade}</strong> unidades no total</p>
-            <p><small>Clique para gerenciar</small></p>
-          </div>
-        `;
-      }).join('');
+      armacao.quantidade -= quantidade;
+      mostrarMensagem(msgMovimentacao, `-${quantidade} unidades removidas do estoque da loja ${loja}!`, "orange");
     }
 
-    function mudarTab(tabName) {
-      // Esconde todas as tabs
-      document.querySelectorAll(".tab-content").forEach(tab => {
-        tab.classList.remove("active");
-      });
-      document.querySelectorAll(".tab").forEach(tab => {
-        tab.classList.remove("active");
-      });
+    salvarLocal();
 
-      // Mostra a tab selecionada
-      document.getElementById(`tab-${tabName}`).classList.add("active");
-      document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
+    // Atualiza visualizações
+    if (lojaAtual === loja) {
+      carregarArmacoes(lojaAtual);
     }
+    carregarLojas();
 
-    // ========== EVENT LISTENERS ==========
-    document.addEventListener("DOMContentLoaded", function() {
-      // Login form
-      document.getElementById("loginForm").addEventListener("submit", processarLogin);
+    // Limpa formulário
+    document.getElementById("formMovimentacao").reset();
+  }
 
-      // User menu dropdown
-      document.getElementById("user-menu").addEventListener("click", function(e) {
-        e.stopPropagation();
-        document.getElementById("user-dropdown").classList.toggle("show");
-      });
+  // --- Carregar filtros para armações ---
+  function carregarFiltros(lojaId) {
+    const armacoes = dadosLojas[lojaId] || [];
+    const marcas = [...new Set(armacoes.map(a => a.marca))];
+    const categorias = [...new Set(armacoes.map(a => a.categoria))];
 
-      // Fecha dropdown ao clicar fora
-      document.addEventListener("click", function() {
-        document.getElementById("user-dropdown").classList.remove("show");
-      });
+    const filterBrand = document.getElementById("filter-brand");
+    const filterCategory = document.getElementById("filter-category");
 
-      // Busca de lojas
-      document.getElementById("search-store").addEventListener("input", filtrarLojas);
+    filterBrand.innerHTML = '<option value="">Todas as Marcas</option>';
+    filterCategory.innerHTML = '<option value="">Todas as Categorias</option>';
 
-      // Busca de armações
-      document.getElementById("search-frame").addEventListener("input", function() {
-        const termo = this.value.toLowerCase();
-        const armacoes = dadosLojas[lojaAtual] || [];
-        const armacoesFiltradas = armacoes.filter(a =>
-          a.marca.toLowerCase().includes(termo) || a.modelo.toLowerCase().includes(termo)
-        );
-
-        const armacoesList = document.getElementById("armacoes-list");
-
-        if (armacoesFiltradas.length === 0) {
-          armacoesList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma armação encontrada</p>";
-          return;
-        }
-
-        armacoesList.innerHTML = armacoesFiltradas.map(armacao => `
-          <div class="frame-card">
-            <div class="frame-actions">
-              <button class="btn-remove" onclick="removerArmacao('${armacao.marca}', '${armacao.modelo}')" title="Remover armação">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <h4>${armacao.modelo}</h4>
-            <p><strong>Marca:</strong> ${armacao.marca}</p>
-            <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
-            <p><strong>Preço:</strong> ${armacao.preco}</p>
-            <p><strong>Categoria:</strong> ${armacao.categoria}</p>
-          </div>
-        `).join('');
-      });
-
-      // Filtros da lista de armações
-      document.getElementById("filter-brand").addEventListener("change", aplicarFiltros);
-      document.getElementById("filter-category").addEventListener("change", aplicarFiltros);
-      document.getElementById("filter-price").addEventListener("change", aplicarFiltros);
-      document.getElementById("filter-quantity").addEventListener("change", aplicarFiltros);
-
-      // Botão voltar para lojas
-      document.getElementById("back-to-stores").addEventListener("click", function() {
-        document.getElementById("armacoes-container").classList.remove("active-section");
-        document.getElementById("lojas-container").classList.add("active-section");
-        lojaAtual = null;
-        document.getElementById("search-frame").value = "";
-      });
-
-      // Formulários de cadastro e movimentação
-      document.getElementById("formCadastro").addEventListener("submit", cadastrarArmacao);
-      document.getElementById("formMovimentacao").addEventListener("submit", registrarMovimentacao);
-
-      // Adiciona listeners para as tabs
-      document.querySelectorAll(".tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-          mudarTab(tab.dataset.tab);
-        });
-      });
+    marcas.forEach(marca => {
+      if (marca && marca !== "Sem marca") {
+        filterBrand.innerHTML += `<option value="${marca}">${marca}</option>`;
+      }
     });
 
-    // ========== FUNÇÃO DE APLICAÇÃO DE FILTROS ==========
-    function aplicarFiltros() {
-      const brandFilter = document.getElementById("filter-brand").value;
-      const categoryFilter = document.getElementById("filter-category").value;
-      const priceFilter = document.getElementById("filter-price").value;
-      const quantityFilter = document.getElementById("filter-quantity").value;
-
-      let armacoes = dadosLojas[lojaAtual] || [];
-
-      if (brandFilter) {
-        armacoes = armacoes.filter(a => a.marca === brandFilter);
+    categorias.forEach(categoria => {
+      if (categoria && categoria !== "Geral") {
+        filterCategory.innerHTML += `<option value="${categoria}">${categoria}</option>`;
       }
+    });
+  }
 
-      if (categoryFilter) {
-        armacoes = armacoes.filter(a => a.categoria === categoryFilter);
-      }
+  // --- Filtrar lojas pela busca ---
+  function filtrarLojas() {
+    const termo = document.getElementById("search-store").value.toLowerCase();
+    const lojas = Object.keys(dadosLojas);
+    const lojasFiltradas = lojas.filter(loja =>
+      loja.toLowerCase().includes(termo)
+    );
 
-      if (priceFilter) {
-        const [minPrice, maxPrice] = priceFilter.split("-").map(Number);
-        armacoes = armacoes.filter(a => {
-          let precoNumerico = parseFloat(a.preco.replace(/\D/g, "")) || 0;
-          return precoNumerico >= minPrice && precoNumerico <= maxPrice;
-        });
-      }
+    const lojasList = document.getElementById("lojas-list");
 
-      if (quantityFilter) {
-        const [minQ, maxQ] = quantityFilter.split("-").map(Number);
-        armacoes = armacoes.filter(a => a.quantidade >= minQ && a.quantidade <= maxQ);
-      }
-
-      const armacoesList = document.getElementById("armacoes-list");
-      if (armacoes.length === 0) {
-        armacoesList.innerHTML = "<p style=\"grid-column:1/-1; text-align:center; padding:20px; color:#666;\">Nenhuma armação encontrada</p>";
-        return;
-      }
-
-      armacoesList.innerHTML = armacoes.map(armacao => `
-        <div class="frame-card">
-          <div class="frame-actions">
-            <button class="btn-remove" onclick="removerArmacao('${armacao.marca}', '${armacao.modelo}')" title="Remover armação">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <h4>${armacao.modelo}</h4>
-          <p><strong>Marca:</strong> ${armacao.marca}</p>
-          <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
-          <p><strong>Preço:</strong> ${armacao.preco}</p>
-          <p><strong>Categoria:</strong> ${armacao.categoria}</p>
-        </div>
-      `).join('');
+    if (lojasFiltradas.length === 0) {
+      lojasList.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">
+        Nenhuma loja encontrada</p>`;
+      return;
     }
-  </script>
+
+    lojasList.innerHTML = lojasFiltradas.map(loja => {
+      const totalArmacoes = dadosLojas[loja].length;
+      const totalQuantidade = dadosLojas[loja].reduce((sum, item) => sum + item.quantidade, 0);
+
+      return `
+        <div class="store-card" onclick="abrirDetalhesLoja('${loja}')">
+          <h3>${loja}</h3>
+          <p><strong>${totalArmacoes}</strong> modelos de armações</p>
+          <p><strong>${totalQuantidade}</strong> unidades no total</p>
+          <p><small>Clique para gerenciar</small></p>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // --- Mudar tab ativa ---
+  function mudarTab(tabName) {
+    document.querySelectorAll(".tab-content").forEach(tab => {
+      tab.classList.remove("active");
+    });
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.classList.remove("active");
+    });
+
+    document.getElementById(`tab-${tabName}`).classList.add("active");
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
+  }
+
+  // --- Aplicar filtros para armações ---
+  function aplicarFiltros() {
+    const brandFilter = document.getElementById("filter-brand").value;
+    const categoryFilter = document.getElementById("filter-category").value;
+    const priceFilter = document.getElementById("filter-price").value;
+    const quantityFilter = document.getElementById("filter-quantity").value;
+
+    let armacoes = dadosLojas[lojaAtual] || [];
+
+    if (brandFilter) {
+      armacoes = armacoes.filter(a => a.marca === brandFilter);
+    }
+
+    if (categoryFilter) {
+      armacoes = armacoes.filter(a => a.categoria === categoryFilter);
+    }
+
+    if (priceFilter) {
+      const [minPrice, maxPrice] = priceFilter.split("-").map(Number);
+      armacoes = armacoes.filter(a => {
+        // Corrige parsing do preço para float
+        let precoNumerico = parseFloat(a.preco.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+        return precoNumerico >= minPrice && precoNumerico <= maxPrice;
+      });
+    }
+
+    if (quantityFilter) {
+      const [minQ, maxQ] = quantityFilter.split("-").map(Number);
+      armacoes = armacoes.filter(a => a.quantidade >= minQ && a.quantidade <= maxQ);
+    }
+
+    const armacoesList = document.getElementById("armacoes-list");
+    if (armacoes.length === 0) {
+      armacoesList.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:20px; color:#666;">
+        Nenhuma armação encontrada</p>`;
+      return;
+    }
+
+    armacoesList.innerHTML = armacoes.map(armacao => `
+      <div class="frame-card">
+        <div class="frame-actions">
+          <button class="btn-remove" onclick="removerArmacao('${armacao.marca}', '${armacao.modelo}')" title="Remover armação">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <h4>${armacao.modelo}</h4>
+        <p><strong>Marca:</strong> ${armacao.marca}</p>
+        <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
+        <p><strong>Preço:</strong> ${armacao.preco}</p>
+        <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+      </div>
+    `).join('');
+  }
+
+  // --- Atualiza lista de lojas ---
+  function carregarLojas() {
+    filtrarLojas();
+  }
+
+  // --- Event listeners e inicialização ---
+  document.addEventListener("DOMContentLoaded", () => {
+    carregarLocal();
+    carregarLojas();
+
+    // Se quiser carregar dados da planilha ao iniciar, descomente:
+    // carregarDadosPlanilha();
+
+    // Busca lojas em tempo real
+    document.getElementById("search-store").addEventListener("input", filtrarLojas);
+
+    // Botão voltar para lista de lojas
+    document.getElementById("back-to-stores").addEventListener("click", () => {
+      document.getElementById("lojas-container").classList.add("active-section");
+      document.getElementById("armacoes-container").classList.remove("active-section");
+      lojaAtual = null;
+
+      // Reset filtros e campos
+      document.getElementById("filter-brand").value = "";
+      document.getElementById("filter-category").value = "";
+      document.getElementById("filter-price").value = "";
+      document.getElementById("filter-quantity").value = "";
+      document.getElementById("search-store").value = "";
+      carregarLojas();
+
+      mudarTab("lista");
+    });
+
+    // Formulários
+    document.getElementById("formCadastro").addEventListener("submit", cadastrarArmacao);
+    document.getElementById("formMovimentacao").addEventListener("submit", registrarMovimentacao);
+
+    // Filtros armações
+    document.getElementById("filter-brand").addEventListener("change", aplicarFiltros);
+    document.getElementById("filter-category").addEventListener("change", aplicarFiltros);
+    document.getElementById("filter-price").addEventListener("change", aplicarFiltros);
+    document.getElementById("filter-quantity").addEventListener("change", aplicarFiltros);
+  });
+</script>
+
 </body>
 </html>
