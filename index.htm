@@ -146,8 +146,162 @@
           </div>
         </div>
 
-        <!-- TABS -->
-        <div class="tabs">
+       <!-- ====== ÁREA DE TABS ====== -->
+<div class="tabs">
+  <div class="tab active" data-tab="lista" onclick="mudarTab('lista')">
+    Lista de Armações
+  </div>
+  <div class="tab" data-tab="cadastro" onclick="mudarTab('cadastro')">
+    Cadastrar Armação
+  </div>
+  <div class="tab" data-tab="entrada" onclick="mudarTab('entrada')">
+    Entrada/Saída
+  </div>
+</div>
+
+<!-- ====== TAB 1: LISTA DE ARMAÇÕES ====== -->
+<div class="tab-content active" id="tab-lista">
+  <div class="filters">
+    <!-- aqui ficam seus filtros ou campo de pesquisa -->
+    <input type="text" id="filtroBusca" placeholder="Buscar armação...">
+  </div>
+
+  <div id="listaArmacoes">
+    <!-- cards de armações aparecem aqui -->
+  </div>
+</div>
+
+<!-- ====== TAB 2: CADASTRAR ARMAÇÃO ====== -->
+<div class="tab-content" id="tab-cadastro">
+  <h2>Cadastrar Nova Armação</h2>
+  <form id="formCadastro" onsubmit="cadastrarArmacao(event)">
+    <label>Marca:</label>
+    <input type="text" id="marca" required>
+
+    <label>Modelo:</label>
+    <input type="text" id="modelo" required>
+
+    <label>Quantidade:</label>
+    <input type="number" id="quantidade" required>
+
+    <label>Loja:</label>
+    <select id="loja" required>
+      <option value="PRIMITIVA 1">PRIMITIVA 1</option>
+      <option value="PRIMITIVA 2">PRIMITIVA 2</option>
+      <option value="BARUERI">BARUERI</option>
+      <option value="ITAPEVI">ITAPEVI</option>
+      <option value="ANTONIO AGU">ANTONIO AGU</option>
+      <option value="SUPER SHOPPING">SUPER SHOPPING</option>
+      <option value="UNIAO">UNIAO</option>
+      <option value="JANDIRA">JANDIRA</option>
+      <option value="CARAPICUIBA">CARAPICUIBA</option>
+      <option value="SANTO ANTONIO">SANTO ANTONIO</option>
+    </select>
+
+    <button type="submit">Cadastrar</button>
+  </form>
+</div>
+
+<!-- ====== TAB 3: ENTRADA / SAÍDA ====== -->
+<div class="tab-content" id="tab-entrada">
+  <h2>Controle de Entrada e Saída</h2>
+  <form id="formMovimentacao" onsubmit="registrarMovimentacao(event)">
+    <label>Referência / Modelo:</label>
+    <input type="text" id="referencia" required>
+
+    <label>Tipo de Movimentação:</label>
+    <select id="tipo" required>
+      <option value="entrada">Entrada</option>
+      <option value="saida">Saída</option>
+    </select>
+
+    <label>Quantidade:</label>
+    <input type="number" id="qtdMovimentada" required>
+
+    <button type="submit">Registrar</button>
+  </form>
+</div>
+
+<!-- ====== SCRIPT PARA AS TABS ====== -->
+<script>
+  function mudarTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+  }
+
+  function cadastrarArmacao(event) {
+    event.preventDefault();
+    alert("✅ Armação cadastrada com sucesso!");
+    mudarTab('lista');
+  }
+
+  function registrarMovimentacao(event) {
+    event.preventDefault();
+    alert("✅ Movimentação registrada!");
+    mudarTab('lista');
+  }
+</script>
+
+<!-- ====== ESTILO OPCIONAL (para clareza visual) ====== -->
+<style>
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    background: #eaeaea;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 8px;
+    transition: 0.3s;
+  }
+
+  .tab.active {
+    background-color: #007bff;
+    color: white;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  input, select, button {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+</style>
+
           <div class="tab active" data-tab="lista">Lista de Armações</div>
           <div class="tab" data-tab="cadastro">Cadastrar Armação</div>
           <div class="tab" data-tab="entrada-saida">Entrada/Saída</div>
