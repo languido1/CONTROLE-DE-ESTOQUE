@@ -1,192 +1,164 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Controle de Estoque | Óticas Diniz</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/>
-  <style>
-    :root {
-      --primary: #2a4365;
-      --secondary: #4299e1;
-      --light: #ebf8ff;
-      --dark: #1a365d;
-      --success: #48bb78;
-      --warning: #ed8936;
-      --danger: #e53e3e;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Montserrat', sans-serif; background-color: #f0f4f8; color: #2d3748; line-height: 1.6; }
-
-    /* LOGIN */
-    #login-container { display: flex; justify-content: center; align-items: center; height: 100vh; background: var(--light); }
-    #loginForm { background: white; padding: 40px 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; width: 350px; }
-    #loginForm h2 { margin-bottom: 20px; color: var(--primary); font-size: 26px; font-weight: bold; }
-    #loginForm input { width: 100%; padding: 12px; margin: 12px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
-    #loginForm button { width: 100%; padding: 12px; background: var(--secondary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-    #loginForm button:hover { background: var(--primary); }
-    .error-msg { color: var(--danger); font-size: 14px; margin-top: 10px; }
-
-    /* DASHBOARD */
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; display: none; }
-    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 30px; }
-    .logo { display: flex; align-items: center; gap: 15px; }
-    .logo h1 { font-size: 26px; font-weight: 700; color: var(--primary); }
-    .logo h1 span { color: var(--secondary); }
-    .user-menu { position: relative; display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px 12px; border-radius: 6px; }
-    .user-menu:hover { background: var(--light); }
-    .user-dropdown { position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 150px; display: none; z-index: 1000; }
-    .user-dropdown.show { display: block; }
-    .user-dropdown button { width: 100%; padding: 12px 15px; background: none; border: none; text-align: left; cursor: pointer; color: var(--dark); }
-    .user-dropdown button:hover { background: var(--light); }
-    .user-dropdown button.logout { color: var(--danger); border-top: 1px solid #e2e8f0; }
-    .user-dropdown button.logout:hover { background: #fed7d7; }
-
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .section-header h2 { font-size: 22px; color: var(--primary); font-weight: 600; }
-    .section-header h2 i { margin-right: 10px; color: var(--secondary); }
-
-    .search-box { position: relative; width: 250px; }
-    .search-box i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #a0aec0; }
-    .search-box input { width: 100%; padding: 12px 15px 12px 35px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 16px; }
-
-    .grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
-    .store-card { background: white; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; cursor: pointer; }
-    .store-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15); }
-    .store-card h3 { font-size: 18px; margin-bottom: 10px; color: var(--primary); }
-    .store-card p { color: #718096; font-size: 14px; }
-
-    .frame-card { background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); position: relative; }
-    .frame-card h4 { font-size: 16px; margin-bottom: 5px; color: var(--primary); }
-    .frame-card p { font-size: 14px; color: #718096; margin-bottom: 5px; }
-    .frame-card .frame-price { font-weight: 600; color: var(--dark); }
-
-    #armacoes-container { display: none; }
-    .active-section { display: block !important; animation: fadeIn 0.3s ease; }
-
-    footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px; }
-
-    /* Estilo para os filtros */
-    .filters { display: flex; flex-wrap: wrap; gap: 12px; margin: 15px 0; }
-    .filters select { padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; cursor: pointer; width: 180px; }
-    .filters select:hover { border-color: var(--secondary); }
-
-    /* Ajustes para as tabs */
-    .tabs { display: flex; gap: 15px; border-bottom: 2px solid #e2e8f0; margin-bottom: 15px; }
-    .tab { padding: 10px 20px; cursor: pointer; border: 2px solid transparent; color: var(--primary); font-weight: 600; }
-    .tab.active { border-color: var(--secondary); color: var(--secondary); }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    
-    /* Animação de fade-in */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
-</head>
-<body>
-  <!-- LOGIN -->
-  <div id="login-container">
-    <form id="loginForm">
-      <h2>Controle de Estoque</h2>
-      <input id="usuario" type="text" placeholder="Usuário" required value="admin" />
-      <input id="senha" type="password" placeholder="Senha" required value="1234"/>
-      <button type="submit">Entrar</button>
-      <p id="errorMsg" class="error-msg"></p>
-    </form>
+<!DOCTYPE html> 
+<html lang="pt-BR"> 
+<head> 
+  <meta charset="utf-8"/> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/> 
+  <title>Controle de Estoque | Óticas Diniz</title> 
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/> 
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet"/> 
+  <link rel="stylesheet" href="style.css">
+</head> 
+<body> 
+  <!-- LOGIN --> 
+  <div id="login-container"> 
+    <form id="loginForm"> 
+      <h2>Controle de Estoque</h2> 
+      <input id="usuario" type="text" placeholder="Usuário" required value="admin" /> 
+      <input id="senha" type="password" placeholder="Senha" required value="1234"/> 
+      <button type="submit">Entrar</button> 
+      <p id="errorMsg" class="error-msg"></p> 
+    </form> 
   </div>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="container">
-    <header class="dashboard-header">
-      <div class="logo">
-        <h1>Controle de <span>Estoque</span></h1>
-      </div>
-      <div class="user-menu" id="user-menu">
-        <span class="username">Admin</span>
-        <i class="fas fa-user-circle"></i>
-        <i class="fas fa-chevron-down" style="font-size: 12px;"></i>
-        <div class="user-dropdown" id="user-dropdown">
-          <button class="logout" onclick="fazerLogout()">
-            <i class="fas fa-sign-out-alt"></i> Sair
-          </button>
-        </div>
-      </div>
-    </header>
-    <main class="content">
-      <div id="lojas-container" class="active-section">
-        <div class="section-header">
-          <h2><i class="fas fa-store"></i> Nossas Lojas</h2>
-          <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input id="search-store" type="text" placeholder="Buscar loja..."/>
-          </div>
-        </div>
-        <div id="lojas-list" class="grid-container">
-          <div class="loading">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Carregando lojas...</p>
-          </div>
-        </div>
+  <!-- DASHBOARD --> 
+  <div id="dashboard" class="container"> 
+    <header class="dashboard-header"> 
+      <div class="logo"> 
+        <h1>Controle de <span>Estoque</span></h1> 
+      </div> 
+      <div class="user-menu" id="userMenu">
+        <span class="username">Admin</span> 
+        <i class="fas fa-user-circle"></i> 
+        <i class="fas fa-chevron-down" style="font-size: 12px;"></i> 
+        <div class="user-dropdown" id="user-dropdown"> 
+          <button class="logout" onclick="fazerLogout()"> 
+            <i class="fas fa-sign-out-alt"></i> Sair 
+          </button> 
+        </div> 
+      </div> 
+    </header> 
+    <main class="content"> 
+      <div id="lojas-container" class="active-section"> 
+        <div class="section-header"> 
+          <h2><i class="fas fa-store"></i> Nossas Lojas</h2> 
+          <div class="search-box"> 
+            <i class="fas fa-search"></i> 
+            <input id="search-store" type="text" placeholder="Buscar loja..."/> 
+          </div> 
+        </div> 
+        <div id="lojas-list" class="grid-container"> 
+          <div class="loading"> 
+            <i class="fas fa-spinner fa-spin"></i> 
+            <p>Carregando lojas...</p> 
+          </div> 
+        </div> 
       </div>
 
-      <div id="armacoes-container">
-        <div class="section-header">
-          <h2><i class="fas fa-glasses"></i> Armações: <span id="current-store-name"></span></h2>
-          <div class="actions">
-            <button id="back-to-stores" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button>
-            <div class="search-box">
-              <i class="fas fa-search"></i>
-              <input id="search-frame" type="text" placeholder="Buscar armação..."/>
+      <div id="armacoes-container"> 
+        <div class="section-header"> 
+          <h2><i class="fas fa-glasses"></i> Armações: <span id="current-store-name"></span></h2> 
+          <div class="actions"> 
+            <button id="back-to-stores" class="btn-back"><i class="fas fa-arrow-left"></i> Voltar</button> 
+            <div class="search-box"> 
+              <i class="fas fa-search"></i> 
+              <input id="search-frame" type="text" placeholder="Buscar armação..."/> 
+            </div> 
+          </div> 
+        </div>
+
+        <!-- TABS --> 
+        <div class="tabs"> 
+          <div class="tab active" data-tab="lista">Lista de Armações</div> 
+          <div class="tab" data-tab="cadastro">Cadastrar Armação</div> 
+          <div class="tab" data-tab="entrada-saida">Entrada/Saída</div> 
+        </div>
+
+        <!-- TAB 1: LISTA DE ARMAÇÕES --> 
+        <div class="tab-content active" id="tab-lista"> 
+          <div class="filters"> 
+            <select id="filter-brand"> 
+              <option value="">Todas as Marcas</option> 
+            </select> 
+            <select id="filter-category"> 
+              <option value="">Todas as Categorias</option> 
+            </select> 
+            <select id="filter-price"> 
+              <option value="">Todos os Preços</option> 
+              <option value="0-199">Até R$ 199</option> 
+              <option value="200-299">R$ 200 a R$ 299</option> 
+              <option value="300-399">R$ 300 a R$ 399</option> 
+              <option value="400-9999">Acima de R$ 400</option> 
+            </select> 
+            <select id="filter-quantity"> 
+              <option value="">Todas as Quantidades</option> 
+              <option value="1-5">1 a 5</option> 
+              <option value="6-10">6 a 10</option> 
+              <option value="11-999">Mais de 10</option> 
+            </select> 
+          </div> 
+          <div id="armacoes-list" class="grid-container"></div> 
+        </div>
+
+        <!-- TAB 2: CADASTRAR ARMAÇÃO -->
+        <div class="tab-content" id="tab-cadastro">
+          <form id="cadastroForm" class="form-container">
+            <div class="form-group">
+              <label for="marca">Marca:</label>
+              <input type="text" id="marca" required>
             </div>
-          </div>
+            <div class="form-group">
+              <label for="modelo">Modelo:</label>
+              <input type="text" id="modelo" required>
+            </div>
+            <div class="form-group">
+              <label for="quantidade">Quantidade:</label>
+              <input type="number" id="quantidade" required min="0">
+            </div>
+            <div class="form-group">
+              <label for="preco">Preço:</label>
+              <input type="text" id="preco" required placeholder="R$ 0,00">
+            </div>
+            <div class="form-group">
+              <label for="categoria">Categoria:</label>
+              <input type="text" id="categoria" required>
+            </div>
+            <button type="submit" class="btn-primary">Cadastrar Armação</button>
+          </form>
         </div>
 
-        <!-- TABS -->
-        <div class="tabs">
-          <div class="tab active" data-tab="lista">Lista de Armações</div>
-          <div class="tab" data-tab="cadastro">Cadastrar Armação</div>
-          <div class="tab" data-tab="entrada-saida">Entrada/Saída</div>
+        <!-- TAB 3: ENTRADA/SAÍDA -->
+        <div class="tab-content" id="tab-entrada-saida">
+          <form id="movimentacaoForm" class="form-container">
+            <div class="form-group">
+              <label for="armacao">Armação:</label>
+              <select id="armacao" required>
+                <option value="">Selecione uma armação</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="tipo">Tipo de Movimentação:</label>
+              <select id="tipo" required>
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="quantidade-mov">Quantidade:</label>
+              <input type="number" id="quantidade-mov" required min="1">
+            </div>
+            <div class="form-group">
+              <label for="observacao">Observação:</label>
+              <textarea id="observacao" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Registrar Movimentação</button>
+          </form>
         </div>
-
-        <!-- TAB 1: LISTA DE ARMAÇÕES -->
-        <div class="tab-content active" id="tab-lista">
-          <div class="filters">
-            <select id="filter-brand">
-              <option value="">Todas as Marcas</option>
-            </select>
-            <select id="filter-category">
-              <option value="">Todas as Categorias</option>
-            </select>
-            <select id="filter-price">
-              <option value="">Todos os Preços</option>
-              <option value="0-199">Até R$ 199</option>
-              <option value="200-299">R$ 200 a R$ 299</option>
-              <option value="300-399">R$ 300 a R$ 399</option>
-              <option value="400-9999">Acima de R$ 400</option>
-            </select>
-            <select id="filter-quantity">
-              <option value="">Todas as Quantidades</option>
-              <option value="1-5">1 a 5</option>
-              <option value="6-10">6 a 10</option>
-              <option value="11-999">Mais de 10</option>
-            </select>
-          </div>
-          <div id="armacoes-list" class="grid-container"></div>
-        </div>
-        
-        <!-- Outros tabs (Cadastrar Armação e Entrada/Saída) podem ser organizados similarmente -->
-      </div>
-    </main>
-    <footer>
-      Sistema de Controle de Estoque v1.0
-    </footer>
+      </div> 
+    </main> 
+    <footer> 
+      Sistema de Controle de Estoque v1.0 
+    </footer> 
   </div>
-
-  <script src="script.js"></script>
-</body>
+  <script src="script.js"></script> 
+</body> 
 </html>
