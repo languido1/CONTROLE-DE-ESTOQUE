@@ -6,7 +6,7 @@ let usuarioLogado = null;
 // 🔒 LOGIN
 function processarLogin(event) {
   event.preventDefault();
-  console.log("Formulário de login foi enviado!"); // Verificar se o login foi disparado corretamente
+  console.log("Formulário de login foi enviado!");
 
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
@@ -23,15 +23,34 @@ function processarLogin(event) {
   }
 }
 
+// Função para mostrar/esconder o dropdown do usuário
+function toggleUserDropdown() {
+  const dropdown = document.getElementById("user-dropdown");
+  dropdown.classList.toggle("show");
+}
+
+// Fechar o dropdown quando clicar fora dele
+window.onclick = function(event) {
+  if (!event.target.matches('.user-menu, .user-menu *')) {
+    const dropdowns = document.getElementsByClassName("user-dropdown");
+    for (let dropdown of dropdowns) {
+      if (dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
 function fazerLogout() {
   usuarioLogado = null;
   document.getElementById("dashboard").style.display = "none";
   document.getElementById("login-container").style.display = "flex";
   document.getElementById("usuario").value = "";
   document.getElementById("senha").value = "";
+  document.getElementById("errorMsg").textContent = "";
 }
 
-// 🔗 CARREGAR DADOS DA PLANILHA VIA GOOGLE APPS SCRIPT (com proxy para evitar CORS)
+// 🔗 CARREGAR DADOS DA PLANILHA
 async function carregarDados() {
   try {
     const proxyURL = `https://corsproxy.io/?${encodeURIComponent(API_URL)}`;
@@ -41,8 +60,7 @@ async function carregarDados() {
     const dados = await resposta.json();
     console.log("✅ Dados recebidos:", dados);
 
-    dadosLojas = {}; // Limpa os dados anteriores
-    // Espera que a estrutura do Apps Script seja { lojas: [ { Loja, Marca, Modelo, Quantidade, Preço, Categoria } ] }
+    dadosLojas = {};
     dados.lojas.forEach(item => {
       const loja = (item.Loja || "SEM NOME").toUpperCase().trim();
       if (!dadosLojas[loja]) dadosLojas[loja] = [];
@@ -55,7 +73,7 @@ async function carregarDados() {
       });
     });
 
-    carregarLojas(); // Atualiza a lista de lojas
+    carregarLojas();
   } catch (erro) {
     console.error("❌ Erro ao carregar dados:", erro);
     alert("Erro ao carregar dados da planilha. Verifique se o link do Apps Script está publicado como 'Qualquer pessoa com o link'.");
@@ -114,15 +132,15 @@ function abrirDetalhesLoja(lojaId) {
   document.getElementById("lojas-container").classList.remove("active-section");
   document.getElementById("armacoes-container").classList.add("active-section");
   document.getElementById("current-store-name").textContent = lojaId;
-  carregarArmacoes(lojaAtual);
-  carregarFiltros(lojaAtual);
+  carregarArmacoes();
+  carregarFiltros();
   mudarTab("lista");
 }
 
 // 🏷️ CARREGAR ARMAÇÕES DA LOJA
-function carregarArmacoes(lojaId) {
+function carregarArmacoes() {
   const armacoesList = document.getElementById("armacoes-list");
-  const armacoes = dadosLojas[lojaId] || [];
+  const armacoes = dadosLojas[lojaAtual] || [];
 
   if (armacoes.length === 0) {
     armacoesList.innerHTML = "<p style='grid-column:1/-1; text-align:center; padding:20px; color:#666;'>Nenhuma armação cadastrada nesta loja</p>";
@@ -138,9 +156,35 @@ function carregarArmacoes(lojaId) {
       <p><strong>Categoria:</strong> ${armacao.categoria}</p>
     </div>
   `).join('');
+
+  // Atualizar o select de armações na tab de Entrada/Saída
+  const selectArmacao = document.getElementById("armacao");
+  selectArmacao.innerHTML = '<option value="">Selecione uma armação</option>' +
+    armacoes.map(armacao => `
+      <option value="${armacao.modelo}">${armacao.modelo} - ${armacao.marca}</option>
+    `).join('');
 }
 
-// 🧰 APLICAR FILTROS
+// 🧰 CARREGAR FILTROS
+function carregarFiltros() {
+  const armacoes = dadosLojas[lojaAtual] || [];
+  
+  // Filtro de Marcas
+  const marcas = [...new Set(armacoes.map(a => a.marca))].filter(Boolean);
+  document.getElementById("filter-brand").innerHTML = `
+    <option value="">Todas as Marcas</option>
+    ${marcas.map(marca => `<option value="${marca}">${marca}</option>`).join('')}
+  `;
+
+  // Filtro de Categorias
+  const categorias = [...new Set(armacoes.map(a => a.categoria))].filter(Boolean);
+  document.getElementById("filter-category").innerHTML = `
+    <option value="">Todas as Categorias</option>
+    ${categorias.map(cat => `<option value="${cat}">${cat}</option>`).join('')}
+  `;
+}
+
+// 🔍 APLICAR FILTROS
 function aplicarFiltros() {
   const brandFilter = document.getElementById("filter-brand").value;
   const categoryFilter = document.getElementById("filter-category").value;
@@ -170,7 +214,7 @@ function aplicarFiltros() {
     armacoes = armacoes.filter(a => a.quantidade >= minQ && a.quantidade <= maxQ);
   }
 
-  carregarArmacoes(lojaAtual, armacoes);
+  carregarArmacoes();
 }
 
 // 🔘 MUDAR TABS
@@ -188,12 +232,70 @@ function mudarTab(tabName) {
   document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
 }
 
+// 📝 CADASTRAR NOVA ARMAÇÃO
+async function cadastrarArmacao(event) {
+  event.preventDefault();
+  
+  const armacao = {
+    marca: document.getElementById("marca").value,
+    modelo: document.getElementById("modelo").value,
+    quantidade: parseInt(document.getElementById("quantidade").value),
+    preco: document.getElementById("preco").value,
+    categoria: document.getElementById("categoria").value
+  };
+
+  // Aqui você implementaria a lógica para salvar na planilha
+  alert("Funcionalidade em desenvolvimento: A armação seria cadastrada aqui.");
+  
+  event.target.reset();
+  mudarTab("lista");
+}
+
+// 📦 REGISTRAR MOVIMENTAÇÃO
+async function registrarMovimentacao(event) {
+  event.preventDefault();
+  
+  const dados = {
+    armacao: document.getElementById("armacao").value,
+    tipo: document.getElementById("tipo").value,
+    quantidade: parseInt(document.getElementById("quantidade-mov").value),
+    observacao: document.getElementById("observacao").value
+  };
+
+  // Aqui você implementaria a lógica para atualizar na planilha
+  alert("Funcionalidade em desenvolvimento: A movimentação seria registrada aqui.");
+  
+  event.target.reset();
+  mudarTab("lista");
+}
+
 // 🎯 EVENTOS
 document.addEventListener("DOMContentLoaded", function() {
+  // Login
   document.getElementById("loginForm").addEventListener("submit", processarLogin);
+  
+  // Menu do usuário
+  document.querySelector(".user-menu").addEventListener("click", toggleUserDropdown);
+  
+  // Busca e navegação
   document.getElementById("search-store").addEventListener("input", filtrarLojas);
   document.getElementById("back-to-stores").addEventListener("click", function() {
     document.getElementById("armacoes-container").classList.remove("active-section");
     document.getElementById("lojas-container").classList.add("active-section");
   });
+
+  // Tabs
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => mudarTab(tab.dataset.tab));
+  });
+
+  // Filtros
+  document.getElementById("filter-brand").addEventListener("change", aplicarFiltros);
+  document.getElementById("filter-category").addEventListener("change", aplicarFiltros);
+  document.getElementById("filter-price").addEventListener("change", aplicarFiltros);
+  document.getElementById("filter-quantity").addEventListener("change", aplicarFiltros);
+
+  // Formulários
+  document.getElementById("cadastroForm").addEventListener("submit", cadastrarArmacao);
+  document.getElementById("movimentacaoForm").addEventListener("submit", registrarMovimentacao);
 });
