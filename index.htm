@@ -147,56 +147,7 @@
         </div>
 
         <!-- TABS -->
-      <!-- TAB 2: CADASTRAR ARMAÇÃO -->
-<div class="tab-content" id="tab-cadastro">
-  <form id="formCadastro">
-    <div style="margin-bottom:10px;">
-      <label for="marca">Marca:</label><br/>
-      <input id="marca" type="text" placeholder="Marca" required style="width:100%; padding:8px;"/>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label for="modelo">Modelo:</label><br/>
-      <input id="modelo" type="text" placeholder="Modelo" required style="width:100%; padding:8px;"/>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label for="quantidade">Quantidade:</label><br/>
-      <input id="quantidade" type="number" min="1" placeholder="Quantidade" required style="width:100%; padding:8px;"/>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label for="loja">Loja:</label><br/>
-      <input id="loja" type="text" placeholder="Loja" required style="width:100%; padding:8px;" value="" />
-    </div>
-    <button type="submit" style="padding:12px 20px; background:#4299e1; color:#fff; border:none; border-radius:6px; cursor:pointer;">
-      Cadastrar
-    </button>
-  </form>
-</div>
-
-<!-- TAB 3: ENTRADA/SAÍDA -->
-<div class="tab-content" id="tab-entrada-saida">
-  <form id="formMovimentacao">
-    <div style="margin-bottom:10px;">
-      <label for="referencia">Referência (Modelo):</label><br/>
-      <input id="referencia" type="text" placeholder="Modelo da armação" required style="width:100%; padding:8px;"/>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label for="tipo">Tipo de Movimentação:</label><br/>
-      <select id="tipo" required style="width:100%; padding:8px;">
-        <option value="">Selecione</option>
-        <option value="entrada">Entrada</option>
-        <option value="saida">Saída</option>
-      </select>
-    </div>
-    <div style="margin-bottom:10px;">
-      <label for="qtdMovimentada">Quantidade:</label><br/>
-      <input id="qtdMovimentada" type="number" min="1" placeholder="Quantidade" required style="width:100%; padding:8px;"/>
-    </div>
-    <button type="submit" style="padding:12px 20px; background:#4299e1; color:#fff; border:none; border-radius:6px; cursor:pointer;">
-      Registrar
-    </button>
-  </form>
-</div>
-
+        <div class="tabs">
           <div class="tab active" data-tab="lista">Lista de Armações</div>
           <div class="tab" data-tab="cadastro">Cadastrar Armação</div>
           <div class="tab" data-tab="entrada-saida">Entrada/Saída</div>
@@ -239,3 +190,4 @@
   <script src="script.js"></script>
 </body>
 </html>
+
