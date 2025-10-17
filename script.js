@@ -53,7 +53,239 @@ async function carregarDados() {
 
     // Espera estrutura { lojas: [ { Loja, Marca, Modelo, Quantidade, Preço, Categoria } ] }
     dados.lojas.forEach(item => {
-      const loja = (item.Loja || "SEM NOME").toUpperCase().trim();
+     // script.js
+
+// Simulando dados das lojas e armações
+const lojas = [
+  { id: 1, nome: "Loja Centro" },
+  { id: 2, nome: "Loja Shopping" },
+];
+
+let armações = [
+  { id: 1, lojaId: 1, nome: "Armação A", marca: "Marca X", categoria: "Categoria 1", preco: 250, quantidade: 10 },
+  { id: 2, lojaId: 1, nome: "Armação B", marca: "Marca Y", categoria: "Categoria 2", preco: 350, quantidade: 5 },
+  { id: 3, lojaId: 2, nome: "Armação C", marca: "Marca X", categoria: "Categoria 1", preco: 450, quantidade: 8 },
+];
+
+const loginContainer = document.getElementById("login-container");
+const dashboard = document.getElementById("dashboard");
+const userMenu = document.getElementById("user-menu");
+const userDropdown = document.getElementById("user-dropdown");
+const errorMsg = document.getElementById("errorMsg");
+const lojasList = document.getElementById("lojas-list");
+const armacoesContainer = document.getElementById("armacoes-container");
+const currentStoreName = document.getElementById("current-store-name");
+const backToStoresBtn = document.getElementById("back-to-stores");
+
+// Tabs
+const tabs = document.querySelectorAll(".tab");
+const tabContents = document.querySelectorAll(".tab-content");
+
+// Lista de armações
+const armacoesList = document.getElementById("armacoes-list");
+
+// Formulários e mensagens
+const formCadastro = document.getElementById("form-cadastro");
+const cadastroMsg = document.getElementById("cadastro-msg");
+const formEntradaSaida = document.getElementById("form-entrada-saida");
+const entradaSaidaMsg = document.getElementById("entrada-saida-msg");
+const frameSelect = document.getElementById("frame-select");
+
+// Variável para armazenar loja selecionada
+let lojaSelecionada = null;
+
+// Login
+document.getElementById("loginForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const usuario = document.getElementById("usuario").value;
+  const senha = document.getElementById("senha").value;
+  
+  if(usuario === "admin" && senha === "1234"){
+    loginContainer.style.display = "none";
+    dashboard.style.display = "block";
+    carregarLojas();
+  } else {
+    errorMsg.textContent = "Usuário ou senha inválidos!";
+  }
+});
+
+// Carregar lojas
+function carregarLojas(){
+  lojasList.innerHTML = "";
+  lojas.forEach(loja => {
+    const div = document.createElement("div");
+    div.className = "store-card";
+    div.textContent = loja.nome;
+    div.style.cursor = "pointer";
+    div.addEventListener("click", () => abrirLoja(loja));
+    lojasList.appendChild(div);
+  });
+}
+
+// Abrir loja e mostrar armações
+function abrirLoja(loja){
+  lojaSelecionada = loja;
+  currentStoreName.textContent = loja.nome;
+  document.getElementById("lojas-container").classList.remove("active-section");
+  armacoesContainer.classList.add("active-section");
+  mostrarArmações(loja.id);
+  limparTabs();
+  ativarTab("lista");
+  cadastroMsg.textContent = "";
+  entradaSaidaMsg.textContent = "";
+}
+
+// Mostrar armações da loja
+function mostrarArmações(lojaId){
+  armacoesList.innerHTML = "";
+  const armaçõesDaLoja = armações.filter(a => a.lojaId === lojaId);
+  if(armaçõesDaLoja.length === 0){
+    armacoesList.innerHTML = "<p>Nenhuma armação encontrada.</p>";
+    return;
+  }
+  armaçõesDaLoja.forEach(a => {
+    const card = document.createElement("div");
+    card.className = "frame-card";
+    card.innerHTML = `
+      <h4>${a.nome}</h4>
+      <p>Marca: ${a.marca}</p>
+      <p>Categoria: ${a.categoria}</p>
+      <p class="frame-price">Preço: R$ ${a.preco.toFixed(2)}</p>
+      <p>Quantidade: ${a.quantidade}</p>
+    `;
+    armacoesList.appendChild(card);
+  });
+  atualizarFrameSelect(armaçõesDaLoja);
+}
+
+// Atualizar select para entrada/saída
+function atualizarFrameSelect(armaçõesDaLoja){
+  frameSelect.innerHTML = '<option value="">Selecione a armação</option>';
+  armaçõesDaLoja.forEach(a => {
+    const option = document.createElement("option");
+    option.value = a.id;
+    option.textContent = `${a.nome} (Qtd: ${a.quantidade})`;
+    frameSelect.appendChild(option);
+  });
+}
+
+// Botão voltar para lojas
+backToStoresBtn.addEventListener("click", () => {
+  armacoesContainer.classList.remove("active-section");
+  document.getElementById("lojas-container").classList.add("active-section");
+  lojaSelecionada = null;
+});
+
+// Tabs switch
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    limparTabs();
+    ativarTab(tab.dataset.tab);
+    cadastroMsg.textContent = "";
+    entradaSaidaMsg.textContent = "";
+  });
+});
+
+function limparTabs(){
+  tabs.forEach(t => t.classList.remove("active"));
+  tabContents.forEach(c => c.classList.remove("active"));
+}
+
+function ativarTab(tabName){
+  const tab = Array.from(tabs).find(t => t.dataset.tab === tabName);
+  const tabContent = document.getElementById(`tab-${tabName}`);
+  if(tab && tabContent){
+    tab.classList.add("active");
+    tabContent.classList.add("active");
+  }
+}
+
+// Formulário cadastro
+formCadastro.addEventListener("submit", e => {
+  e.preventDefault();
+  if(!lojaSelecionada) return;
+  
+  const nome = document.getElementById("frame-name").value.trim();
+  const marca = document.getElementById("frame-brand").value.trim();
+  const categoria = document.getElementById("frame-category").value.trim();
+  const preco = parseFloat(document.getElementById("frame-price").value);
+  const quantidade = parseInt(document.getElementById("frame-quantity").value);
+
+  if(!nome || !marca || !categoria || isNaN(preco) || isNaN(quantidade)){
+    cadastroMsg.style.color = "red";
+    cadastroMsg.textContent = "Preencha todos os campos corretamente.";
+    return;
+  }
+
+  const novoId = armações.length ? armações[armações.length -1].id +1 : 1;
+  armações.push({ id: novoId, lojaId: lojaSelecionada.id, nome, marca, categoria, preco, quantidade });
+
+  cadastroMsg.style.color = "green";
+  cadastroMsg.textContent = "Armação cadastrada com sucesso!";
+
+  // Limpar form
+  formCadastro.reset();
+
+  // Atualizar lista e select
+  mostrarArmações(lojaSelecionada.id);
+});
+
+// Formulário entrada/saída
+formEntradaSaida.addEventListener("submit", e => {
+  e.preventDefault();
+  if(!lojaSelecionada) return;
+
+  const frameId = parseInt(frameSelect.value);
+  const acao = document.getElementById("action-type").value;
+  const quantidade = parseInt(document.getElementById("action-quantity").value);
+
+  if(!frameId || !acao || isNaN(quantidade) || quantidade <= 0){
+    entradaSaidaMsg.style.color = "red";
+    entradaSaidaMsg.textContent = "Preencha todos os campos corretamente.";
+    return;
+  }
+
+  const armação = armações.find(a => a.id === frameId && a.lojaId === lojaSelecionada.id);
+  if(!armação){
+    entradaSaidaMsg.style.color = "red";
+    entradaSaidaMsg.textContent = "Armação não encontrada.";
+    return;
+  }
+
+  if(acao === "saida" && armação.quantidade < quantidade){
+    entradaSaidaMsg.style.color = "red";
+    entradaSaidaMsg.textContent = "Quantidade insuficiente para saída.";
+    return;
+  }
+
+  // Atualizar quantidade
+  if(acao === "entrada"){
+    armação.quantidade += quantidade;
+  } else if (acao === "saida"){
+    armação.quantidade -= quantidade;
+  }
+
+  entradaSaidaMsg.style.color = "green";
+  entradaSaidaMsg.textContent = "Movimentação registrada com sucesso!";
+
+  formEntradaSaida.reset();
+  mostrarArmações(lojaSelecionada.id);
+});
+
+// Logout
+function fazerLogout(){
+  dashboard.style.display = "none";
+  loginContainer.style.display = "flex";
+  document.getElementById("loginForm").reset();
+  errorMsg.textContent = "";
+  lojaSelecionada = null;
+  armaçõesList.innerHTML = "";
+}
+
+userMenu.addEventListener("click", () => {
+  userDropdown.classList.toggle("show");
+});
+
       if (!dadosLojas[loja]) dadosLojas[loja] = [];
       dadosLojas[loja].push({
         marca: item.Marca || "",
@@ -235,3 +467,4 @@ document.addEventListener("DOMContentLoaded", function () {
   const formMov = document.getElementById("formMovimentacao");
   if (formMov) formMov.addEventListener("submit", registrarMovimentacao);
 });
+
