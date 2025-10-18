@@ -6,8 +6,6 @@ let usuarioLogado = null;
 // 🔒 LOGIN
 function processarLogin(event) {
   event.preventDefault();
-  console.log("Formulário de login foi enviado!"); // Verificar se o login foi disparado corretamente
-
   const usuario = document.getElementById("usuario").value;
   const senha = document.getElementById("senha").value;
   const errorMsg = document.getElementById("errorMsg");
@@ -31,7 +29,7 @@ function fazerLogout() {
   document.getElementById("senha").value = "";
 }
 
-// 🔗 CARREGAR DADOS DA PLANILHA VIA GOOGLE APPS SCRIPT (com proxy para evitar CORS)
+// 🔗 CARREGAR DADOS DA PLANILHA
 async function carregarDados() {
   try {
     const proxyURL = `https://corsproxy.io/?${encodeURIComponent(API_URL)}`;
@@ -41,8 +39,8 @@ async function carregarDados() {
     const dados = await resposta.json();
     console.log("✅ Dados recebidos:", dados);
 
-    dadosLojas = {}; // Limpa os dados anteriores
-    // Espera que a estrutura do Apps Script seja { lojas: [ { Loja, Marca, Modelo, Quantidade, Preço, Categoria } ] }
+    dadosLojas = {}; // Limpa dados antigos
+
     dados.lojas.forEach(item => {
       const loja = (item.Loja || "SEM NOME").toUpperCase().trim();
       if (!dadosLojas[loja]) dadosLojas[loja] = [];
@@ -55,10 +53,10 @@ async function carregarDados() {
       });
     });
 
-    carregarLojas(); // Atualiza a lista de lojas
+    carregarLojas();
   } catch (erro) {
     console.error("❌ Erro ao carregar dados:", erro);
-    alert("Erro ao carregar dados da planilha. Verifique se o link do Apps Script está publicado como 'Qualquer pessoa com o link'.");
+    alert("Erro ao carregar dados. Verifique se o link do Apps Script está correto e publicado.");
   }
 }
 
@@ -115,12 +113,34 @@ function abrirDetalhesLoja(lojaId) {
   document.getElementById("armacoes-container").classList.add("active-section");
   document.getElementById("current-store-name").textContent = lojaId;
   carregarArmacoes(lojaAtual);
-  carregarFiltros(lojaAtual);
   mudarTab("lista");
 }
 
-// 🏷️ CARREGAR ARMAÇÕES DA LOJA
-function carregarArmacoes(lojaId) {
+// 📷 BUSCAR IMAGEM USANDO GOOGLE CUSTOM SEARCH
+async function buscarImagem(marca, modelo) {
+  const API_KEY = "AIzaSyAfKIPVFsLXBG0eTDF0ylMC_MuSBiF3XJs";
+  const CX = "25b45e6e7620d46d2";
+  const query = `óculos ${marca} ${modelo}`;
+
+  const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&cx=${CX}&searchType=image&key=${API_KEY}&num=1`;
+
+  try {
+    const resposta = await fetch(url);
+    const dados = await resposta.json();
+
+    if (dados.items && dados.items.length > 0) {
+      return dados.items[0].link;
+    } else {
+      return "https://via.placeholder.com/300x200?text=Sem+Imagem";
+    }
+  } catch (erro) {
+    console.error("Erro ao buscar imagem:", erro);
+    return "https://via.placeholder.com/300x200?text=Erro+na+Imagem";
+  }
+}
+
+// 🏷️ CARREGAR ARMAÇÕES COM IMAGENS (FUNÇÃO ATUALIZADA)
+async function carregarArmacoes(lojaId) {
   const armacoesList = document.getElementById("armacoes-list");
   const armacoes = dadosLojas[lojaId] || [];
 
@@ -129,75 +149,48 @@ function carregarArmacoes(lojaId) {
     return;
   }
 
-  armacoesList.innerHTML = armacoes.map(armacao => `
-    <div class="frame-card">
-      <h4>${armacao.modelo}</h4>
-      <p><strong>Marca:</strong> ${armacao.marca}</p>
-      <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
-      <p><strong>Preço:</strong> ${armacao.preco}</p>
-      <p><strong>Categoria:</strong> ${armacao.categoria}</p>
-    </div>
-  `).join('');
-}
+  armacoesList.innerHTML = "<p style='grid-column:1/-1; text-align:center; padding:20px; color:#666;'>Carregando armações...</p>";
 
-// 🧰 APLICAR FILTROS
-function aplicarFiltros() {
-  const brandFilter = document.getElementById("filter-brand").value;
-  const categoryFilter = document.getElementById("filter-category").value;
-  const priceFilter = document.getElementById("filter-price").value;
-  const quantityFilter = document.getElementById("filter-quantity").value;
+  try {
+    // Buscar as imagens em paralelo
+    const promessasImagens = armacoes.map(armacao => buscarImagem(armacao.marca, armacao.modelo));
+    const imagensURLs = await Promise.all(promessasImagens);
 
-  let armacoes = dadosLojas[lojaAtual] || [];
+    // Montar os cards
+    const cardsHTML = armacoes.map((armacao, i) => `
+      <div class="frame-card">
+        <img src="${imagensURLs[i]}" alt="Imagem da armação ${armacao.marca} ${armacao.modelo}" style="width:100%; border-radius:6px; margin-bottom:10px;">
+        <h4>${armacao.modelo}</h4>
+        <p><strong>Marca:</strong> ${armacao.marca}</p>
+        <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
+        <p><strong>Preço:</strong> ${armacao.preco}</p>
+        <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+      </div>
+    `).join('');
 
-  if (brandFilter) {
-    armacoes = armacoes.filter(a => a.marca === brandFilter);
+    armacoesList.innerHTML = cardsHTML;
+
+  } catch (erro) {
+    console.error("Erro ao carregar imagens das armações:", erro);
+    armacoesList.innerHTML = "<p style='grid-column:1/-1; text-align:center; padding:20px; color:#666;'>Erro ao carregar as imagens das armações.</p>";
   }
-
-  if (categoryFilter) {
-    armacoes = armacoes.filter(a => a.categoria === categoryFilter);
-  }
-
-  if (priceFilter) {
-    const [minPrice, maxPrice] = priceFilter.split("-").map(Number);
-    armacoes = armacoes.filter(a => {
-      let precoNumerico = parseFloat(a.preco.replace(/\D/g, "")) || 0;
-      return precoNumerico >= minPrice && precoNumerico <= maxPrice;
-    });
-  }
-
-  if (quantityFilter) {
-    const [minQ, maxQ] = quantityFilter.split("-").map(Number);
-    armacoes = armacoes.filter(a => a.quantidade >= minQ && a.quantidade <= maxQ);
-  }
-
-  carregarArmacoes(lojaAtual, armacoes);
 }
 
 // 🔘 MUDAR TABS
 function mudarTab(tabName) {
-  // Esconde todas as tabs
-  document.querySelectorAll(".tab-content").forEach(tab => {
-    tab.classList.remove("active");
-  });
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.classList.remove("active");
-  });
+  document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
 
-  // Mostra a tab selecionada
   document.getElementById(`tab-${tabName}`).classList.add("active");
   document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
 }
 
 // 🎯 EVENTOS
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("loginForm").addEventListener("submit", processarLogin);
   document.getElementById("search-store").addEventListener("input", filtrarLojas);
-  document.getElementById("back-to-stores").addEventListener("click", function() {
+  document.getElementById("back-to-stores").addEventListener("click", function () {
     document.getElementById("armacoes-container").classList.remove("active-section");
     document.getElementById("lojas-container").classList.add("active-section");
   });
 });
-   
-
-
-
