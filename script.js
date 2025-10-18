@@ -3,6 +3,11 @@ let dadosLojas = {};
 let lojaAtual = null;
 let usuarioLogado = null;
 
+// Cache de imagens (marca_modelo → url)
+const imagemCache = {};
+let contadorImagensBuscadasHoje = 0;
+const LIMITE_IMAGENS_HOJE = 10;
+
 // 🔒 LOGIN
 function processarLogin(event) {
   event.preventDefault();
@@ -118,8 +123,8 @@ function abrirDetalhesLoja(lojaId) {
 
 // 📷 BUSCAR IMAGEM USANDO GOOGLE CUSTOM SEARCH
 async function buscarImagem(marca, modelo) {
-  const API_KEY = "AIzaSyBQjWgFZy8oiP8yF4o7_7jfuaGc-XB9NKk";
-  const CX = "25b45e6e7620d46d2";
+  const API_KEY = "AIzaSyBQjWgFZy8oiP8yF4o7_7jfuaGc-XB9NKk";  // ← **Substitua aqui pela sua chave**
+  const CX = "25b45e6e7620d46d2";                // ← **Substitua aqui pelo seu CX**
   const query = `óculos ${marca} ${modelo}`;
 
   const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&cx=${CX}&searchType=image&key=${API_KEY}&num=1`;
@@ -149,37 +154,42 @@ async function carregarArmacoes(lojaId) {
     return;
   }
 
-  armacoesList.innerHTML = "<p style='grid-column:1/-1; text-align:center; padding:20px; color:#666;'>Carregando armações...</p>";
+  armacoesList.innerHTML = ""; // limpa
 
-  try {
-    // Buscar as imagens em paralelo
-    const promessasImagens = armacoes.map(armacao => buscarImagem(armacao.marca, armacao.modelo));
-    const imagensURLs = await Promise.all(promessasImagens);
+  for (const armacao of armacoes) {
+    let imagemURL;
+    const chaveCache = `${armacao.marca}_${armacao.modelo}`;
 
-    // Montar os cards
-    const cardsHTML = armacoes.map((armacao, i) => `
+    if (imagemCache[chaveCache]) {
+      imagemURL = imagemCache[chaveCache];
+    } else if (contadorImagensBuscadasHoje < LIMITE_IMAGENS_HOJE) {
+      imagemURL = await buscarImagem(armacao.marca, armacao.modelo);
+      imagemCache[chaveCache] = imagemURL;
+      contadorImagensBuscadasHoje++;
+    } else {
+      imagemURL = "https://via.placeholder.com/300x200?text=Imagem+Não+Buscada";
+    }
+
+    const card = `
       <div class="frame-card">
-        <img src="${imagensURLs[i]}" alt="Imagem da armação ${armacao.marca} ${armacao.modelo}" style="width:100%; border-radius:6px; margin-bottom:10px;">
+        <img src="${imagemURL}" alt="Imagem da armação ${armacao.marca} ${armacao.modelo}"
+             onerror="this.src='https://via.placeholder.com/300x200?text=Sem+Imagem'" />
         <h4>${armacao.modelo}</h4>
         <p><strong>Marca:</strong> ${armacao.marca}</p>
         <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
         <p><strong>Preço:</strong> ${armacao.preco}</p>
         <p><strong>Categoria:</strong> ${armacao.categoria}</p>
       </div>
-    `).join('');
+    `;
 
-    armacoesList.innerHTML = cardsHTML;
-
-  } catch (erro) {
-    console.error("Erro ao carregar imagens das armações:", erro);
-    armacoesList.innerHTML = "<p style='grid-column:1/-1; text-align:center; padding:20px; color:#666;'>Erro ao carregar as imagens das armações.</p>";
+    armacoesList.innerHTML += card;
   }
 }
 
 // 🔘 MUDAR TABS
 function mudarTab(tabName) {
-  document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach(tab => tab.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
 
   document.getElementById(`tab-${tabName}`).classList.add("active");
   document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
@@ -194,4 +204,3 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("lojas-container").classList.add("active-section");
   });
 });
-
