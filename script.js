@@ -118,7 +118,7 @@ function abrirDetalhesLoja(lojaId) {
 
 // 📷 BUSCAR IMAGEM USANDO GOOGLE CUSTOM SEARCH
 async function buscarImagem(marca, modelo) {
-  const API_KEY = "AIzaSyAfKIPVFsLXBG0eTDF0ylMC_MuSBiF3XJs";
+  const API_KEY = "AIzaSyBQjWgFZy8oiP8yF4o7_7jfuaGc-XB9NKk";
   const CX = "25b45e6e7620d46d2";
   const query = `óculos ${marca} ${modelo}`;
 
@@ -194,3 +194,4 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("lojas-container").classList.add("active-section");
   });
 });
+
