@@ -45,13 +45,6 @@ async function carregarDados() {
     const dados = await resposta.json();
     console.log("✅ Dados recebidos:", dados);
 
-    // Verifique como os dados estão estruturados, por exemplo:
-    // Se for { lojas: [...] }, ok. Se for direto array, ajuste aqui.
-    if (!dados.lojas || !Array.isArray(dados.lojas)) {
-      alert("Formato dos dados inválido: 'lojas' não encontrado.");
-      return;
-    }
-
     dadosLojas = {};
 
     dados.lojas.forEach(item => {
@@ -156,7 +149,7 @@ async function buscarImagem(marca, modelo) {
 async function carregarArmacoes(lojaId) {
   const armacoes = dadosLojas[lojaId] || [];
   preencherFiltros(armacoes);
-  aplicarFiltros(); // para mostrar inicialmente todas
+  aplicarFiltros();
 }
 
 // 🧩 Preencher Filtros
@@ -204,46 +197,103 @@ async function renderizarArmacoes(armacoes) {
   const armacoesList = document.getElementById("armacoes-list");
   armacoesList.innerHTML = "";
 
-  if (armacoes.length === 0) {
-    armacoesList.innerHTML = "<p style='text-align:center; color:#666;'>Nenhuma armação encontrada com os filtros aplicados.</p>";
-    return;
-  }
+  for (const item of armacoes) {
+    let imgSrc = "https://via.placeholder.com/300x200?text=Carregando...";
 
-  for (const armacao of armacoes) {
-    let imgURL = imagemCache[`${armacao.marca}_${armacao.modelo}`];
-    if (!imgURL && contadorImagensBuscadasHoje < LIMITE_IMAGENS_HOJE) {
-      imgURL = await buscarImagem(armacao.marca, armacao.modelo);
-      imagemCache[`${armacao.marca}_${armacao.modelo}`] = imgURL;
+    // Tentar cache primeiro
+    const cacheKey = `${item.marca}_${item.modelo}`;
+    if (imagemCache[cacheKey]) {
+      imgSrc = imagemCache[cacheKey];
+    } else if (contadorImagensBuscadasHoje < LIMITE_IMAGENS_HOJE) {
+      imgSrc = await buscarImagem(item.marca, item.modelo);
+      imagemCache[cacheKey] = imgSrc;
       contadorImagensBuscadasHoje++;
-    } else if (!imgURL) {
-      imgURL = "https://via.placeholder.com/300x200?text=Limite+de+imagens+diárias+atingido";
+    } else {
+      imgSrc = "https://via.placeholder.com/300x200?text=Limite+de+imagens+atingido";
     }
 
-    const itemHTML = `
-      <div class="armacao-card">
-        <img src="${imgURL}" alt="Óculos ${armacao.marca} ${armacao.modelo}" />
-        <h4>${armacao.marca} - ${armacao.modelo}</h4>
-        <p>Categoria: ${armacao.categoria}</p>
-        <p>Quantidade: ${armacao.quantidade}</p>
-        <p>Preço: ${armacao.preco}</p>
-      </div>
+    const card = document.createElement("div");
+    card.className = "armacao-card";
+
+    card.innerHTML = `
+      <img src="${imgSrc}" alt="Óculos ${item.marca} ${item.modelo}" />
+      <h3>${item.marca} ${item.modelo}</h3>
+      <p><strong>Quantidade:</strong> ${item.quantidade}</p>
+      <p><strong>Preço:</strong> ${item.preco}</p>
+      <p><strong>Categoria:</strong> ${item.categoria}</p>
     `;
-    armacoesList.insertAdjacentHTML("beforeend", itemHTML);
+
+    armacoesList.appendChild(card);
   }
 }
 
-// 🔄 Trocar Tabs (lista / filtros)
-function mudarTab(tab) {
-  document.getElementById("lista-tab").classList.remove("active");
-  document.getElementById("filtros-tab").classList.remove("active");
-  document.getElementById("lista-armacoes").style.display = "none";
-  document.getElementById("filtros-armacoes").style.display = "none";
+// 🔄 VOLTAR PARA LOJAS
+function voltarParaLojas() {
+  document.getElementById("armacoes-container").classList.remove("active-section");
+  document.getElementById("lojas-container").classList.add("active-section");
+  lojaAtual = null;
+}
 
-  if (tab === "lista") {
-    document.getElementById("lista-tab").classList.add("active");
-    document.getElementById("lista-armacoes").style.display = "block";
+// 🔘 MUDAR TABS
+function mudarTab(tabName) {
+  const tabs = document.querySelectorAll("#tabs button");
+  tabs.forEach(tab => tab.classList.remove("active"));
+  document.getElementById(`tab-${tabName}`).classList.add("active");
+
+  const lista = document.getElementById("armacoes-list");
+  const grafico = document.getElementById("grafico-container");
+
+  if (tabName === "lista") {
+    lista.style.display = "grid";
+    grafico.style.display = "none";
   } else {
-    document.getElementById("filtros-tab").classList.add("active");
-    document.getElementById("filtros-armacoes").style.display = "block";
+    lista.style.display = "none";
+    grafico.style.display = "block";
+    montarGrafico();
   }
 }
+
+// 📊 MONTAR GRÁFICO
+function montarGrafico() {
+  const ctx = document.getElementById("grafico").getContext("2d");
+  const armacoes = dadosLojas[lojaAtual] || [];
+
+  const categorias = [...new Set(armacoes.map(a => a.categoria))];
+  const quantidades = categorias.map(cat => {
+    return armacoes
+      .filter(a => a.categoria === cat)
+      .reduce((sum, a) => sum + a.quantidade, 0);
+  });
+
+  if (window.graficoInstance) {
+    window.graficoInstance.destroy();
+  }
+
+  window.graficoInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: categorias,
+      datasets: [{
+        label: 'Quantidade por Categoria',
+        data: quantidades,
+        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+
+// 👂 ADICIONAR LISTENER DO FORMULÁRIO LOGIN
+document.getElementById("loginForm").addEventListener("submit", processarLogin);
+
+// 👂 ADICIONAR LISTENERS DE FILTROS
+document.getElementById("search-store").addEventListener("input", filtrarLojas);
+document.getElementById("filtro-marca").addEventListener("change", aplicarFiltros);
+document.getElementById("filtro-categoria").addEventListener("change", aplicarFiltros);
+document.getElementById("filtro-preco").addEventListener("change", aplicarFiltros);
+document.getElementById("filtro-quantidade").addEventListener("change", aplicarFiltros);
