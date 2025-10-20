@@ -34,6 +34,8 @@ function fazerLogout() {
   document.getElementById("usuario").value = "";
   document.getElementById("senha").value = "";
   document.getElementById("errorMsg").textContent = "";
+  document.getElementById("btn-logout").addEventListener("click", fazerLogout);
+
 }
 
 // 🔗 CARREGAR DADOS DA PLANILHA
@@ -240,3 +242,4 @@ document.getElementById("filtro-categoria").addEventListener("change", aplicarFi
 document.getElementById("filtro-preco").addEventListener("change", aplicarFiltros);
 document.getElementById("filtro-quantidade").addEventListener("change", aplicarFiltros);
 document.getElementById("back-to-stores").addEventListener("click", voltarParaLojas);
+
