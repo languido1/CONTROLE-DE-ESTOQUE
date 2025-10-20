@@ -1,5 +1,3 @@
-/* --- Seu CSS original --- */
-
 :root { 
   --primary: #2a4365; 
   --secondary: #4299e1; 
@@ -61,12 +59,14 @@ header { display: flex; justify-content: space-between; align-items: center; pad
   align-items: center;
   text-align: center;
 }
+
 #armacoes-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* cria colunas de no mínimo 200px e se ajusta */
-  gap: 20px; /* espaço entre os itens */
-  padding: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* define largura mínima e distribui */
+  gap: 20px; /* espaçamento entre os cards */
+  padding: 10px 0;
 }
+
 footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px solid #e2e8f0; color: #718096; font-size: 14px; } 
 
 /* Estilo para os filtros */ 
@@ -163,8 +163,7 @@ footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px 
   to { opacity: 1; transform: translateY(0); } 
 }
 
-
-/* --- Adição para as imagens ficarem proporcionais --- */
+/* --- Ajustes para imagens proporcionais --- */
 
 /* Ajuste básico para imagens dentro dos cards */
 .store-card img,
@@ -172,8 +171,6 @@ footer { text-align: center; padding: 20px 0; margin-top: 40px; border-top: 1px 
   width: 100%;         /* Ocupa toda a largura do container */
   height: auto;        /* Mantém a proporção original da imagem */
   object-fit: contain; /* Garante que a imagem não seja cortada ou distorcida */
-  border-radius: 8px;  /* Se quiser bordas arredondadas iguais ao card */
+  border-radius: 8px;  /* Bordas arredondadas condizentes com o card */
   display: block;      /* Remove espaços indesejados abaixo da imagem */
 }
-
-
