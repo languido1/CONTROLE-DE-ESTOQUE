@@ -1,4 +1,5 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbw66jjlRRG7RuzOqApSiMOVY270KOMQ_og0bKTVJrMAi46JvIgkcUaQs1GXsfaHs8Pv/exec";
+
 let dadosLojas = {};
 let lojaAtual = null;
 let usuarioLogado = null;
@@ -31,6 +32,7 @@ function fazerLogout() {
   document.getElementById("login-container").style.display = "flex";
   document.getElementById("usuario").value = "";
   document.getElementById("senha").value = "";
+  document.getElementById("errorMsg").textContent = "";
 }
 
 // 🔗 CARREGAR DADOS DA PLANILHA
@@ -42,6 +44,13 @@ async function carregarDados() {
 
     const dados = await resposta.json();
     console.log("✅ Dados recebidos:", dados);
+
+    // Verifique como os dados estão estruturados, por exemplo:
+    // Se for { lojas: [...] }, ok. Se for direto array, ajuste aqui.
+    if (!dados.lojas || !Array.isArray(dados.lojas)) {
+      alert("Formato dos dados inválido: 'lojas' não encontrado.");
+      return;
+    }
 
     dadosLojas = {};
 
@@ -147,7 +156,7 @@ async function buscarImagem(marca, modelo) {
 async function carregarArmacoes(lojaId) {
   const armacoes = dadosLojas[lojaId] || [];
   preencherFiltros(armacoes);
-  renderizarArmacoes(armacoes);
+  aplicarFiltros(); // para mostrar inicialmente todas
 }
 
 // 🧩 Preencher Filtros
@@ -195,3 +204,46 @@ async function renderizarArmacoes(armacoes) {
   const armacoesList = document.getElementById("armacoes-list");
   armacoesList.innerHTML = "";
 
+  if (armacoes.length === 0) {
+    armacoesList.innerHTML = "<p style='text-align:center; color:#666;'>Nenhuma armação encontrada com os filtros aplicados.</p>";
+    return;
+  }
+
+  for (const armacao of armacoes) {
+    let imgURL = imagemCache[`${armacao.marca}_${armacao.modelo}`];
+    if (!imgURL && contadorImagensBuscadasHoje < LIMITE_IMAGENS_HOJE) {
+      imgURL = await buscarImagem(armacao.marca, armacao.modelo);
+      imagemCache[`${armacao.marca}_${armacao.modelo}`] = imgURL;
+      contadorImagensBuscadasHoje++;
+    } else if (!imgURL) {
+      imgURL = "https://via.placeholder.com/300x200?text=Limite+de+imagens+diárias+atingido";
+    }
+
+    const itemHTML = `
+      <div class="armacao-card">
+        <img src="${imgURL}" alt="Óculos ${armacao.marca} ${armacao.modelo}" />
+        <h4>${armacao.marca} - ${armacao.modelo}</h4>
+        <p>Categoria: ${armacao.categoria}</p>
+        <p>Quantidade: ${armacao.quantidade}</p>
+        <p>Preço: ${armacao.preco}</p>
+      </div>
+    `;
+    armacoesList.insertAdjacentHTML("beforeend", itemHTML);
+  }
+}
+
+// 🔄 Trocar Tabs (lista / filtros)
+function mudarTab(tab) {
+  document.getElementById("lista-tab").classList.remove("active");
+  document.getElementById("filtros-tab").classList.remove("active");
+  document.getElementById("lista-armacoes").style.display = "none";
+  document.getElementById("filtros-armacoes").style.display = "none";
+
+  if (tab === "lista") {
+    document.getElementById("lista-tab").classList.add("active");
+    document.getElementById("lista-armacoes").style.display = "block";
+  } else {
+    document.getElementById("filtros-tab").classList.add("active");
+    document.getElementById("filtros-armacoes").style.display = "block";
+  }
+}
