@@ -145,7 +145,27 @@ async function buscarImagem(marca, modelo) {
 }
 
 // 🏷️ CARREGAR ARMAÇÕES COM IMAGENS (FUNÇÃO ATUALIZADA)
-async function carregarArmacoes(lojaId) {
+  // Preencher filtros dinamicamente
+  preencherFiltros(armacoes);
+
+  // Mostrar todas as armações (sem filtro)
+  renderizarArmacoes(armacoes);
+}
+
+// 🧩 Preencher filtros com base nas armações
+function preencherFiltros(armacoes) {
+  const selectMarca = document.getElementById("filtro-marca");
+  const selectCategoria = document.getElementById("filtro-categoria");
+
+  // Preencher Marcas
+  const marcas = [...new Set(armacoes.map(a => a.marca).filter(Boolean))].sort();
+  selectMarca.innerHTML = '<option value="">Todas as Marcas</option>' + marcas.map(m => `<option value="${m}">${m}</option>`).join('');
+
+  // Preencher Categorias
+  const categorias = [...new Set(armacoes.map(a => a.categoria).filter(Boolean))].sort();
+  selectCategoria.innerHTML = '<option value="">Todas as Categorias</option>' + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
   const armacoesList = document.getElementById("armacoes-list");
   const armacoes = dadosLojas[lojaId] || [];
 
@@ -204,3 +224,74 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("lojas-container").classList.add("active-section");
   });
 });
+
+// 🎯 EVENTOS DE FILTRO
+document.getElementById("filtro-marca").addEventListener("change", aplicarFiltros);
+document.getElementById("filtro-categoria").addEventListener("change", aplicarFiltros);
+document.getElementById("filtro-preco").addEventListener("change", aplicarFiltros);
+document.getElementById("filtro-quantidade").addEventListener("change", aplicarFiltros);
+
+// 🧠 APLICAR FILTROS À LISTA DE ARMAÇÕES
+function aplicarFiltros() {
+  const marcaFiltro = document.getElementById("filtro-marca").value.toLowerCase();
+  const categoriaFiltro = document.getElementById("filtro-categoria").value.toLowerCase();
+  const precoFiltro = document.getElementById("filtro-preco").value;
+  const quantidadeFiltro = document.getElementById("filtro-quantidade").value;
+
+  const armacoesList = document.getElementById("armacoes-list");
+  const armacoes = dadosLojas[lojaAtual] || [];
+
+  const filtradas = armacoes.filter(item => {
+    const marcaOk = !marcaFiltro || item.marca.toLowerCase().includes(marcaFiltro);
+    const categoriaOk = !categoriaFiltro || item.categoria.toLowerCase().includes(categoriaFiltro);
+    const precoNumero = parseFloat(item.preco.replace("R$", "").replace(",", "."));
+    const precoOk = !precoFiltro || precoNumero <= parseFloat(precoFiltro);
+    const qtd = item.quantidade;
+    let qtdOk = true;
+
+    if (quantidadeFiltro === "0") qtdOk = qtd === 0;
+    else if (quantidadeFiltro === "1-10") qtdOk = qtd >= 1 && qtd <= 10;
+    else if (quantidadeFiltro === "11-50") qtdOk = qtd >= 11 && qtd <= 50;
+    else if (quantidadeFiltro === "51+") qtdOk = qtd > 50;
+
+    return marcaOk && categoriaOk && precoOk && qtdOk;
+  });
+
+  renderizarArmacoes(filtradas);
+}
+
+// 🔁 FUNÇÃO DE RENDERIZAÇÃO DE ARMAÇÕES COM BASE NO FILTRO
+async function renderizarArmacoes(armacoes) {
+  const armacoesList = document.getElementById("armacoes-list");
+  armacoesList.innerHTML = "";
+
+  for (const armacao of armacoes) {
+    let imagemURL;
+    const chaveCache = `${armacao.marca}_${armacao.modelo}`;
+
+    if (imagemCache[chaveCache]) {
+      imagemURL = imagemCache[chaveCache];
+    } else if (contadorImagensBuscadasHoje < LIMITE_IMAGENS_HOJE) {
+      imagemURL = await buscarImagem(armacao.marca, armacao.modelo);
+      imagemCache[chaveCache] = imagemURL;
+      contadorImagensBuscadasHoje++;
+    } else {
+      imagemURL = "https://via.placeholder.com/300x200?text=Imagem+Não+Buscada";
+    }
+
+    const card = `
+      <div class="frame-card">
+        <img src="${imagemURL}" alt="Imagem da armação ${armacao.marca} ${armacao.modelo}"
+             onerror="this.src='https://via.placeholder.com/300x200?text=Sem+Imagem'" />
+        <h4>${armacao.modelo}</h4>
+        <p><strong>Marca:</strong> ${armacao.marca}</p>
+        <p><strong>Quantidade:</strong> ${armacao.quantidade} unidades</p>
+        <p><strong>Preço:</strong> ${armacao.preco}</p>
+        <p><strong>Categoria:</strong> ${armacao.categoria}</p>
+      </div>
+    `;
+    armacoesList.innerHTML += card;
+  }
+}
+
+
