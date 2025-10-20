@@ -235,13 +235,16 @@ function voltarParaLojas() {
 }
 
 // 🔘 MUDAR TABS
-function mudarTab(tabName) {
-  const tabs = document.querySelectorAll("#tabs button");
-  tabs.forEach(tab => tab.classList.remove("active"));
-  document.getElementById(`tab-${tabName}`).classList.add("active");
+function mudarTab(tab) {
+  const lista = document.getElementById("tab-lista");
 
-  const lista = document.getElementById("armacoes-list");
-  const grafico = document.getElementById("grafico-container");
+  if (tab === "lista") {
+    lista.style.display = "block";
+  }
+
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
+}
 
   if (tabName === "lista") {
     lista.style.display = "grid";
@@ -297,3 +300,4 @@ document.getElementById("filtro-marca").addEventListener("change", aplicarFiltro
 document.getElementById("filtro-categoria").addEventListener("change", aplicarFiltros);
 document.getElementById("filtro-preco").addEventListener("change", aplicarFiltros);
 document.getElementById("filtro-quantidade").addEventListener("change", aplicarFiltros);
+
