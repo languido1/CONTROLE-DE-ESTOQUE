@@ -159,19 +159,41 @@
         <div class="tab" data-tab="graficos" onclick="mudarTab('graficos')">Gráficos</div>
       </div>
 
-      <!-- Conteúdo da Lista -->
-      <div id="tab-lista" class="tab-content active">
-        <div id="armacoes-list" class="grid-container">
-          <!-- Cards com armações e imagens serão inseridos aqui pelo JS -->
-        </div>
-      </div>
+     <!-- Conteúdo da Lista -->
+<div id="tab-lista" class="tab-content active">
 
-      <!-- Conteúdo dos Gráficos -->
-      <div id="tab-graficos" class="tab-content">
-        <p>Ainda em desenvolvimento...</p>
-      </div>
-    </section>
+  <!-- FILTROS -->
+  <div class="filters">
+    <select id="filtro-marca">
+      <option value="">Todas as Marcas</option>
+    </select>
+
+    <select id="filtro-categoria">
+      <option value="">Todas as Categorias</option>
+    </select>
+
+    <select id="filtro-preco">
+      <option value="">Todos os Preços</option>
+      <option value="0">R$ 0,00</option>
+      <option value="10">Até R$ 10,00</option>
+      <option value="50">Até R$ 50,00</option>
+      <option value="100">Até R$ 100,00</option>
+    </select>
+
+    <select id="filtro-quantidade">
+      <option value="">Todas as Quantidades</option>
+      <option value="0">0 unidades</option>
+      <option value="1-10">1 a 10 unidades</option>
+      <option value="11-50">11 a 50 unidades</option>
+      <option value="51+">Mais de 50 unidades</option>
+    </select>
   </div>
+
+  <!-- LISTA DE ARMAÇÕES -->
+  <div id="armacoes-list" class="grid-container">
+    <!-- Cards com armações e imagens serão inseridos aqui pelo JS -->
+  </div>
+</div>
 
   <footer>
     &copy; 2025 Óticas Diniz - Todos os direitos reservados.
