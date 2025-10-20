@@ -18,7 +18,7 @@ function processarLogin(event) {
   if (usuario === "admin" && senha === "1234") {
     usuarioLogado = usuario;
     document.getElementById("login-container").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("dashboard").classList.add("active");
     document.querySelector(".username").textContent = usuario;
     carregarDados();
   } else {
@@ -26,9 +26,10 @@ function processarLogin(event) {
   }
 }
 
+// 🔒 LOGOUT
 function fazerLogout() {
   usuarioLogado = null;
-  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("dashboard").classList.remove("active");
   document.getElementById("login-container").style.display = "flex";
   document.getElementById("usuario").value = "";
   document.getElementById("senha").value = "";
@@ -119,7 +120,6 @@ function abrirDetalhesLoja(lojaId) {
   document.getElementById("armacoes-container").classList.add("active-section");
   document.getElementById("current-store-name").textContent = lojaId;
   carregarArmacoes(lojaAtual);
-  mudarTab("lista");
 }
 
 // 📷 BUSCAR IMAGEM
@@ -127,13 +127,11 @@ async function buscarImagem(marca, modelo) {
   const API_KEY = "AIzaSyBQjWgFZy8oiP8yF4o7_7jfuaGc-XB9NKk";
   const CX = "25b45e6e7620d46d2";
   const query = `óculos ${marca} ${modelo}`;
-
   const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(query)}&cx=${CX}&searchType=image&key=${API_KEY}&num=1`;
 
   try {
     const resposta = await fetch(url);
     const dados = await resposta.json();
-
     if (dados.items && dados.items.length > 0) {
       return dados.items[0].link;
     } else {
@@ -165,7 +163,7 @@ function preencherFiltros(armacoes) {
 }
 
 // 🧠 APLICAR FILTROS
-function aplicarFiltros() {
+async function aplicarFiltros() {
   const marcaFiltro = document.getElementById("filtro-marca").value.toLowerCase();
   const categoriaFiltro = document.getElementById("filtro-categoria").value.toLowerCase();
   const precoFiltro = document.getElementById("filtro-preco").value;
@@ -178,8 +176,8 @@ function aplicarFiltros() {
     const categoriaOk = !categoriaFiltro || item.categoria.toLowerCase().includes(categoriaFiltro);
     const precoNumero = parseFloat(item.preco.replace("R$", "").replace(",", "."));
     const precoOk = !precoFiltro || precoNumero <= parseFloat(precoFiltro);
-    const qtd = item.quantidade;
     let qtdOk = true;
+    const qtd = item.quantidade;
 
     if (quantidadeFiltro === "0") qtdOk = qtd === 0;
     else if (quantidadeFiltro === "1-10") qtdOk = qtd >= 1 && qtd <= 10;
@@ -234,70 +232,11 @@ function voltarParaLojas() {
   lojaAtual = null;
 }
 
-// 🔘 MUDAR TABS
-function mudarTab(tab) {
-  const lista = document.getElementById("tab-lista");
-
-  if (tab === "lista") {
-    lista.style.display = "block";
-  }
-
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add("active");
-}
-
-  if (tabName === "lista") {
-    lista.style.display = "grid";
-    grafico.style.display = "none";
-  } else {
-    lista.style.display = "none";
-    grafico.style.display = "block";
-    montarGrafico();
-  }
-}
-
-// 📊 MONTAR GRÁFICO
-function montarGrafico() {
-  const ctx = document.getElementById("grafico").getContext("2d");
-  const armacoes = dadosLojas[lojaAtual] || [];
-
-  const categorias = [...new Set(armacoes.map(a => a.categoria))];
-  const quantidades = categorias.map(cat => {
-    return armacoes
-      .filter(a => a.categoria === cat)
-      .reduce((sum, a) => sum + a.quantidade, 0);
-  });
-
-  if (window.graficoInstance) {
-    window.graficoInstance.destroy();
-  }
-
-  window.graficoInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: categorias,
-      datasets: [{
-        label: 'Quantidade por Categoria',
-        data: quantidades,
-        backgroundColor: 'rgba(54, 162, 235, 0.7)'
-      }]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: { beginAtZero: true }
-      }
-    }
-  });
-}
-
-// 👂 ADICIONAR LISTENER DO FORMULÁRIO LOGIN
+// 🔘 LISTENERS
 document.getElementById("loginForm").addEventListener("submit", processarLogin);
-
-// 👂 ADICIONAR LISTENERS DE FILTROS
 document.getElementById("search-store").addEventListener("input", filtrarLojas);
 document.getElementById("filtro-marca").addEventListener("change", aplicarFiltros);
 document.getElementById("filtro-categoria").addEventListener("change", aplicarFiltros);
 document.getElementById("filtro-preco").addEventListener("change", aplicarFiltros);
 document.getElementById("filtro-quantidade").addEventListener("change", aplicarFiltros);
-
+document.getElementById("back-to-stores").addEventListener("click", voltarParaLojas);
